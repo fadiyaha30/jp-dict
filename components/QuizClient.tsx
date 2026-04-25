@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { getHistory } from "@/lib/history";
+import { getFavorites } from "@/lib/favorites";
+
+type Source = "history" | "favorites";
 
 interface QuizWord {
   id: string;
@@ -13,7 +16,7 @@ interface QuizWord {
 }
 
 type Mode = "flip" | "mc";
-type View = "home" | "quiz" | "result";
+type View = "home" | "setup" | "quiz" | "result";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -30,42 +33,57 @@ export default function QuizClient() {
   const { data: session, status } = useSession();
   const isLoggedIn = !!session?.user;
 
-  const [pool, setPool] = useState<QuizWord[]>([]);
+  const [histPool, setHistPool] = useState<QuizWord[]>([]);
+  const [favPool, setFavPool] = useState<QuizWord[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Quiz state
   const [view, setView] = useState<View>("home");
   const [mode, setMode] = useState<Mode>("flip");
+  const [source, setSource] = useState<Source>("history");
+  const [count, setCount] = useState(10);
+
+  const activePool = source === "favorites" ? favPool : histPool;
   const [deck, setDeck] = useState<QuizWord[]>([]);
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
 
-  // Flip card state
   const [flipped, setFlipped] = useState(false);
-
-  // MC state
   const [mcOptions, setMcOptions] = useState<QuizWord[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "loading") return;
     async function load() {
-      let items: any[];
+      // History words
+      let histItems: any[];
       if (isLoggedIn) {
         const r = await fetch("/api/history");
-        items = await r.json();
+        histItems = await r.json();
       } else {
-        items = getHistory();
+        histItems = getHistory();
       }
       const seen = new Set<string>();
-      const words: QuizWord[] = [];
-      for (const i of items) {
+      const histWords: QuizWord[] = [];
+      for (const i of histItems) {
         if (i.type === "word" && !seen.has(i.id)) {
           seen.add(i.id);
-          words.push({ id: i.id, kanji: i.kanji, reading: i.reading, meaning: i.meaning });
+          histWords.push({ id: i.id, kanji: i.kanji, reading: i.reading, meaning: i.meaning });
         }
       }
-      setPool(words);
+      setHistPool(histWords);
+
+      // Favorites
+      let favItems: any[];
+      if (isLoggedIn) {
+        const r = await fetch("/api/favorites");
+        favItems = await r.json();
+      } else {
+        favItems = getFavorites();
+      }
+      setFavPool(
+        favItems.map((f: any) => ({ id: f.id, kanji: f.kanji, reading: f.reading, meaning: f.meaning }))
+      );
+
       setLoaded(true);
     }
     load();
@@ -77,16 +95,21 @@ export default function QuizClient() {
     return shuffle([answer, ...rest]);
   }, []);
 
-  function startQuiz(selectedMode: Mode) {
-    const shuffled = shuffle(pool).slice(0, 20);
-    setMode(selectedMode);
+  function startQuiz() {
+    const shuffled = shuffle(activePool).slice(0, Math.min(count, activePool.length));
     setDeck(shuffled);
     setIdx(0);
     setCorrect(0);
     setFlipped(false);
     setSelected(null);
-    if (selectedMode === "mc") setMcOptions(makeOptions(shuffled, 0));
+    if (mode === "mc") setMcOptions(makeOptions(shuffled, 0));
     setView("quiz");
+  }
+
+  function pickMode(m: Mode) {
+    setMode(m);
+    setCount(Math.min(10, activePool.length));
+    setView("setup");
   }
 
   function advance(wasCorrect: boolean) {
@@ -105,7 +128,27 @@ export default function QuizClient() {
   if (status === "loading" || !loaded) return null;
 
   if (view === "home") {
-    return <HomeView pool={pool} onStart={startQuiz} />;
+    return <HomeView pool={activePool} onPickMode={pickMode} />;
+  }
+
+  if (view === "setup") {
+    return (
+      <SetupView
+        mode={mode}
+        source={source}
+        histPool={histPool}
+        favPool={favPool}
+        count={count}
+        onSourceChange={(s) => {
+          setSource(s);
+          const newPool = s === "favorites" ? favPool : histPool;
+          setCount(Math.min(count, newPool.length) || newPool.length);
+        }}
+        onCountChange={setCount}
+        onStart={startQuiz}
+        onBack={() => setView("home")}
+      />
+    );
   }
 
   if (view === "result") {
@@ -114,10 +157,11 @@ export default function QuizClient() {
         correct={correct}
         total={deck.length}
         mode={mode}
-        onRetry={() => startQuiz(mode)}
-        onSwitch={() => startQuiz(mode === "flip" ? "mc" : "flip")}
+        onRetry={startQuiz}
+        onChangeSettings={() => setView("setup")}
+        onSwitchMode={() => pickMode(mode === "flip" ? "mc" : "flip")}
         onHome={() => setView("home")}
-        canSwitch={mode === "mc" ? true : pool.length >= 4}
+        canSwitch={mode === "flip" ? activePool.length >= 4 : true}
       />
     );
   }
@@ -152,14 +196,16 @@ export default function QuizClient() {
 
 // ── Home view ─────────────────────────────────────────────────────────────────
 
-function HomeView({ pool, onStart }: { pool: QuizWord[]; onStart: (m: Mode) => void }) {
+function HomeView({ pool, onPickMode }: { pool: QuizWord[]; onPickMode: (m: Mode) => void }) {
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>Quiz</h1>
         <p className="text-sm" style={{ color: "var(--muted)" }}>
           Practice words from your history ·{" "}
-          <span style={{ color: "var(--accent)", fontWeight: 600 }}>{pool.length} word{pool.length !== 1 ? "s" : ""} available</span>
+          <span style={{ color: "var(--accent)", fontWeight: 600 }}>
+            {pool.length} word{pool.length !== 1 ? "s" : ""} available
+          </span>
         </p>
       </div>
 
@@ -184,8 +230,8 @@ function HomeView({ pool, onStart }: { pool: QuizWord[]; onStart: (m: Mode) => v
             emoji="🃏"
             title="Flip Cards"
             description="See the word, flip to reveal its reading and meaning. Mark yourself honest."
-            available={pool.length >= 1}
-            onClick={() => onStart("flip")}
+            available
+            onClick={() => onPickMode("flip")}
           />
           <ModeCard
             emoji="🔤"
@@ -193,7 +239,7 @@ function HomeView({ pool, onStart }: { pool: QuizWord[]; onStart: (m: Mode) => v
             description="Pick the correct meaning from 4 options. Instant right or wrong feedback."
             available={pool.length >= 4}
             unavailableMsg={`Need at least 4 words (you have ${pool.length})`}
-            onClick={() => onStart("mc")}
+            onClick={() => onPickMode("mc")}
           />
         </div>
       )}
@@ -216,11 +262,7 @@ function ModeCard({
       onClick={available ? onClick : undefined}
       disabled={!available}
       className="flex flex-col gap-4 rounded-2xl p-6 text-left transition-all disabled:opacity-50"
-      style={{
-        background: "var(--surface)",
-        border: available ? "1px solid var(--border)" : "1px solid var(--border)",
-        cursor: available ? "pointer" : "not-allowed",
-      }}
+      style={{ background: "var(--surface)", border: "1px solid var(--border)", cursor: available ? "pointer" : "not-allowed" }}
       onMouseEnter={(e) => { if (available) (e.currentTarget as HTMLButtonElement).style.borderColor = "#c7d2fe"; }}
       onMouseLeave={(e) => { if (available) (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)"; }}
     >
@@ -236,10 +278,143 @@ function ModeCard({
           className="self-start text-xs font-semibold px-3 py-1.5 rounded-lg mt-auto"
           style={{ background: "var(--accent-pale)", color: "var(--accent)" }}
         >
-          Start →
+          Select →
         </span>
       )}
     </button>
+  );
+}
+
+// ── Setup view ────────────────────────────────────────────────────────────────
+
+function SetupView({
+  mode, source, histPool, favPool, count, onSourceChange, onCountChange, onStart, onBack,
+}: {
+  mode: Mode;
+  source: Source;
+  histPool: QuizWord[];
+  favPool: QuizWord[];
+  count: number;
+  onSourceChange: (s: Source) => void;
+  onCountChange: (n: number) => void;
+  onStart: () => void;
+  onBack: () => void;
+}) {
+  const pool = source === "favorites" ? favPool : histPool;
+  const clamped = Math.min(Math.max(count, 1), pool.length);
+
+  function handleInput(raw: string) {
+    const n = parseInt(raw, 10);
+    if (!isNaN(n)) onCountChange(Math.min(Math.max(n, 1), pool.length));
+  }
+
+  return (
+    <div className="flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex flex-col gap-1">
+        <button
+          onClick={onBack}
+          className="self-start flex items-center gap-1.5 text-sm mb-2"
+          style={{ color: "var(--muted)", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back
+        </button>
+        <h2 className="text-xl font-bold" style={{ color: "var(--text)" }}>
+          {mode === "flip" ? "🃏 Flip Cards" : "🔤 Multiple Choice"}
+        </h2>
+        <p className="text-sm" style={{ color: "var(--muted)" }}>How many questions?</p>
+      </div>
+
+      {/* Source toggle */}
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
+          Word source
+        </p>
+        <div
+          className="flex rounded-xl overflow-hidden gap-px self-start w-full"
+          style={{ background: "var(--border)", border: "1px solid var(--border)" }}
+        >
+          {([
+            { key: "history", label: `History (${histPool.length})` },
+            { key: "favorites", label: `Favorites (${favPool.length})` },
+          ] as { key: Source; label: string }[]).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => onSourceChange(key)}
+              disabled={key === "favorites" ? favPool.length === 0 : histPool.length === 0}
+              className="flex-1 py-2 text-sm font-medium transition-all disabled:opacity-40"
+              style={
+                source === key
+                  ? { background: "var(--surface)", color: "var(--accent)", fontWeight: 600 }
+                  : { background: "var(--subtle)", color: "var(--muted)" }
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {source === "favorites" && favPool.length === 0 && (
+          <p className="text-xs" style={{ color: "#dc2626" }}>No favorites yet — save some words first.</p>
+        )}
+      </div>
+
+      {/* Spinner */}
+      <div className="flex flex-col items-center gap-3">
+        <div
+          className="flex items-center rounded-2xl overflow-hidden"
+          style={{ border: "1px solid var(--border)", background: "var(--surface)" }}
+        >
+          <button
+            onClick={() => onCountChange(Math.max(clamped - 1, 1))}
+            disabled={clamped <= 1}
+            className="px-5 py-4 text-xl font-bold transition-colors disabled:opacity-30"
+            style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer" }}
+          >
+            −
+          </button>
+          <input
+            type="number"
+            min={1}
+            max={pool.length}
+            value={clamped}
+            onChange={(e) => handleInput(e.target.value)}
+            className="text-center font-black outline-none"
+            style={{
+              width: "5rem",
+              fontSize: "2rem",
+              background: "none",
+              border: "none",
+              color: "var(--text)",
+              MozAppearance: "textfield",
+            } as React.CSSProperties}
+          />
+          <button
+            onClick={() => onCountChange(Math.min(clamped + 1, pool.length))}
+            disabled={clamped >= pool.length}
+            className="px-5 py-4 text-xl font-bold transition-colors disabled:opacity-30"
+            style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer" }}
+          >
+            +
+          </button>
+        </div>
+        <p className="text-xs" style={{ color: "var(--muted)" }}>
+          max {pool.length} (your word history)
+        </p>
+      </div>
+
+      {/* Start button */}
+      <button
+        onClick={onStart}
+        disabled={pool.length === 0}
+        className="w-full py-4 rounded-2xl font-bold text-base disabled:opacity-40"
+        style={{ background: "var(--accent)", color: "white" }}
+      >
+        Start {clamped} question{clamped !== 1 ? "s" : ""}
+      </button>
+    </div>
   );
 }
 
@@ -278,7 +453,6 @@ function FlipView({
     <div className="flex flex-col gap-6">
       <ProgressBar {...progress} />
 
-      {/* 3D flip card */}
       <div style={{ perspective: "1200px" }}>
         <div
           onClick={!flipped ? onFlip : undefined}
@@ -294,11 +468,7 @@ function FlipView({
           {/* Front */}
           <div
             className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-4"
-            style={{
-              backfaceVisibility: "hidden",
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-            }}
+            style={{ backfaceVisibility: "hidden", background: "var(--surface)", border: "1px solid var(--border)" }}
           >
             <p
               className="jp-text font-black select-none"
@@ -329,21 +499,20 @@ function FlipView({
         </div>
       </div>
 
-      {/* Self-assessment buttons */}
       <div
         className="flex gap-3 transition-all"
         style={{ opacity: flipped ? 1 : 0, pointerEvents: flipped ? "auto" : "none" }}
       >
         <button
           onClick={onMiss}
-          className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all"
+          className="flex-1 py-3 rounded-xl font-semibold text-sm"
           style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
         >
           ✗ Miss
         </button>
         <button
           onClick={onGotIt}
-          className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all"
+          className="flex-1 py-3 rounded-xl font-semibold text-sm"
           style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}
         >
           ✓ Got it
@@ -366,15 +535,9 @@ function MCView({
   onNext: () => void;
 }) {
   function optionStyle(opt: QuizWord): React.CSSProperties {
-    if (!selected) {
-      return { background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" };
-    }
-    if (opt.id === word.id) {
-      return { background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#15803d" };
-    }
-    if (opt.id === selected) {
-      return { background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" };
-    }
+    if (!selected) return { background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" };
+    if (opt.id === word.id) return { background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#15803d" };
+    if (opt.id === selected) return { background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" };
     return { background: "var(--subtle)", border: "1px solid var(--border)", color: "var(--muted)", opacity: 0.6 };
   }
 
@@ -382,10 +545,14 @@ function MCView({
     <div className="flex flex-col gap-6">
       <ProgressBar {...progress} />
 
-      {/* Question */}
       <div
-        className="rounded-2xl flex items-center justify-center"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)", height: "160px" }}
+        className="rounded-2xl flex flex-col items-center justify-center gap-2"
+        style={{
+          background: "var(--surface)",
+          border: selected ? "1px solid #c7d2fe" : "1px solid var(--border)",
+          height: "160px",
+          transition: "border-color 0.2s",
+        }}
       >
         <p
           className="jp-text font-black select-none"
@@ -393,9 +560,16 @@ function MCView({
         >
           {word.kanji}
         </p>
+        {selected && word.reading !== word.kanji && (
+          <p
+            className="jp-text text-base select-none"
+            style={{ color: "var(--accent)", opacity: 0, animation: "fadeIn 0.25s ease forwards" }}
+          >
+            {word.reading}
+          </p>
+        )}
       </div>
 
-      {/* Options */}
       <div className="flex flex-col gap-2.5">
         {options.map((opt) => (
           <button
@@ -410,7 +584,6 @@ function MCView({
         ))}
       </div>
 
-      {/* Next button */}
       {selected && (
         <button
           onClick={onNext}
@@ -427,13 +600,14 @@ function MCView({
 // ── Result view ───────────────────────────────────────────────────────────────
 
 function ResultView({
-  correct, total, mode, onRetry, onSwitch, onHome, canSwitch,
+  correct, total, mode, onRetry, onChangeSettings, onSwitchMode, onHome, canSwitch,
 }: {
   correct: number;
   total: number;
   mode: Mode;
   onRetry: () => void;
-  onSwitch: () => void;
+  onChangeSettings: () => void;
+  onSwitchMode: () => void;
   onHome: () => void;
   canSwitch: boolean;
 }) {
@@ -462,11 +636,18 @@ function ResultView({
           className="w-full py-3 rounded-xl text-sm font-semibold"
           style={{ background: "var(--accent)", color: "white" }}
         >
-          Try again ({mode === "flip" ? "Flip Cards" : "Multiple Choice"})
+          Try again
+        </button>
+        <button
+          onClick={onChangeSettings}
+          className="w-full py-3 rounded-xl text-sm font-medium"
+          style={{ background: "var(--subtle)", color: "var(--text)", border: "1px solid var(--border)" }}
+        >
+          Change questions
         </button>
         {canSwitch && (
           <button
-            onClick={onSwitch}
+            onClick={onSwitchMode}
             className="w-full py-3 rounded-xl text-sm font-medium"
             style={{ background: "var(--subtle)", color: "var(--text)", border: "1px solid var(--border)" }}
           >

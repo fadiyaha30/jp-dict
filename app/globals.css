@@ -61,6 +61,19 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* ── Hide number input spinners ─────────────────────── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
 /* ── Mantine light overrides ─────────────────────────── */
 [data-mantine-color-scheme="light"] {
   --mantine-color-body: var(--bg);
