@@ -58,6 +58,16 @@ db.exec(`
     translation TEXT    NOT NULL DEFAULT '',
     created_at  INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS personal_notes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    phrase     TEXT    NOT NULL,
+    meaning    TEXT    NOT NULL DEFAULT '',
+    context    TEXT    NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  );
 `);
 
 // ── Users ─────────────────────────────────────────────────────────────────────
@@ -227,4 +237,50 @@ export function addUserExample(
 
 export function deleteUserExample(userId: number, exampleId: number) {
   db.prepare("DELETE FROM user_examples WHERE id = ? AND user_id = ?").run(exampleId, userId);
+}
+
+// ── Personal Notes ────────────────────────────────────────────────────────────
+
+export interface DbPersonalNote {
+  id: number;
+  phrase: string;
+  meaning: string;
+  context: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export function getPersonalNotes(userId: number): DbPersonalNote[] {
+  return db
+    .prepare("SELECT id, phrase, meaning, context, created_at, updated_at FROM personal_notes WHERE user_id = ? ORDER BY updated_at DESC")
+    .all(userId) as DbPersonalNote[];
+}
+
+export function addPersonalNote(
+  userId: number,
+  phrase: string,
+  meaning: string,
+  context: string
+): number {
+  const now = Date.now();
+  const result = db
+    .prepare("INSERT INTO personal_notes (user_id, phrase, meaning, context, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+    .run(userId, phrase, meaning, context, now, now);
+  return result.lastInsertRowid as number;
+}
+
+export function updatePersonalNote(
+  userId: number,
+  noteId: number,
+  phrase: string,
+  meaning: string,
+  context: string
+) {
+  db.prepare(
+    "UPDATE personal_notes SET phrase = ?, meaning = ?, context = ?, updated_at = ? WHERE id = ? AND user_id = ?"
+  ).run(phrase, meaning, context, Date.now(), noteId, userId);
+}
+
+export function deletePersonalNote(userId: number, noteId: number) {
+  db.prepare("DELETE FROM personal_notes WHERE id = ? AND user_id = ?").run(noteId, userId);
 }

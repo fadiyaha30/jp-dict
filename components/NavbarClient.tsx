@@ -36,6 +36,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
         <nav className="flex items-center gap-6">
           {link("/favorites", "Favorites")}
           {link("/history", "History")}
+          {link("/notes", "Notes")}
 
           {username ? (
             <div className="flex items-center gap-3">
