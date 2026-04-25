@@ -2,14 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { TextInput, SegmentedControl, ActionIcon, Stack, Group } from "@mantine/core";
 import { pushSearch } from "@/lib/history";
-import {
-  TextInput,
-  SegmentedControl,
-  ActionIcon,
-  Stack,
-  Group,
-} from "@mantine/core";
 
 type Mode = "auto" | "en" | "jp";
 
@@ -28,11 +23,24 @@ export default function SearchBar({
   const [mode, setMode] = useState<Mode>(defaultMode);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
-    pushSearch(query.trim(), mode);
+
+    const item = { type: "search" as const, query: query.trim(), mode, timestamp: Date.now() };
+    if (isLoggedIn) {
+      fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item),
+      });
+    } else {
+      pushSearch(query.trim(), mode);
+    }
+
     startTransition(() => {
       router.push(`/search?q=${encodeURIComponent(query.trim())}&mode=${mode}`);
     });
@@ -58,16 +66,7 @@ export default function SearchBar({
               loading={isPending}
               aria-label="Search"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>

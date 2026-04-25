@@ -1,18 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import {
-  Stack,
-  Text,
-  Group,
-  Badge,
-  Button,
-  SimpleGrid,
-  Card,
-  ActionIcon,
-  Tooltip,
-} from "@mantine/core";
+import { Stack, Text, Group, Badge, Button, SimpleGrid, Card, ActionIcon, Tooltip } from "@mantine/core";
 import { getFavorites, removeFavorite, type FavoriteItem } from "@/lib/favorites";
 
 const JLPT_COLORS: Record<string, string> = {
@@ -30,16 +21,34 @@ function timeAgo(ts: number): string {
 }
 
 export default function FavoritesPage() {
+  const { data: session, status } = useSession();
+  const isLoggedIn = !!session?.user;
   const [items, setItems] = useState<FavoriteItem[]>([]);
 
   useEffect(() => {
-    setItems(getFavorites());
-  }, []);
+    if (status === "loading") return;
+    if (isLoggedIn) {
+      fetch("/api/favorites").then((r) => r.json()).then(setItems);
+    } else {
+      setItems(getFavorites());
+    }
+  }, [isLoggedIn, status]);
 
-  function handleRemove(id: string) {
-    removeFavorite(id);
-    setItems(getFavorites());
+  async function handleRemove(id: string) {
+    if (isLoggedIn) {
+      await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      setItems((prev) => prev.filter((f) => f.id !== id));
+    } else {
+      removeFavorite(id);
+      setItems(getFavorites());
+    }
   }
+
+  if (status === "loading") return null;
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
@@ -49,6 +58,7 @@ export default function FavoritesPage() {
             <Text size="xl" fw={700}>Favorites</Text>
             <Text size="sm" c="dimmed">
               {items.length} saved word{items.length !== 1 ? "s" : ""}
+              {isLoggedIn ? " · synced to your account" : " · stored locally"}
             </Text>
           </Stack>
         </Group>
@@ -67,29 +77,16 @@ export default function FavoritesPage() {
         ) : (
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             {items.map((item) => (
-              <Card
-                key={item.id}
-                withBorder
-                shadow="xs"
-                radius="md"
-                padding="lg"
-                className="hover:border-[#1D9E75] transition-colors"
-              >
+              <Card key={item.id} withBorder shadow="xs" radius="md" padding="lg"
+                className="hover:border-[#1D9E75] transition-colors">
                 <Stack gap="xs">
                   <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Link href={`/word/${item.id}`} style={{ textDecoration: "none", color: "inherit", flex: 1 }}>
-                      <Text
-                        size="2rem"
-                        fw={700}
-                        className="jp-text"
-                        style={{ lineHeight: 1.2, letterSpacing: "0.02em" }}
-                      >
+                      <Text size="2rem" fw={700} className="jp-text" style={{ lineHeight: 1.2 }}>
                         {item.kanji}
                       </Text>
                       {item.reading && item.reading !== item.kanji && (
-                        <Text size="sm" c="dimmed" className="jp-text" mt={2}>
-                          {item.reading}
-                        </Text>
+                        <Text size="sm" c="dimmed" className="jp-text" mt={2}>{item.reading}</Text>
                       )}
                     </Link>
                     <Group gap="xs">
@@ -99,14 +96,8 @@ export default function FavoritesPage() {
                         </Badge>
                       )}
                       <Tooltip label="Remove from favorites" withArrow>
-                        <ActionIcon
-                          variant="filled"
-                          color="yellow"
-                          size="sm"
-                          radius="xl"
-                          onClick={() => handleRemove(item.id)}
-                          aria-label="Remove from favorites"
-                        >
+                        <ActionIcon variant="filled" color="yellow" size="sm" radius="xl"
+                          onClick={() => handleRemove(item.id)} aria-label="Remove from favorites">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                           </svg>
@@ -115,9 +106,7 @@ export default function FavoritesPage() {
                     </Group>
                   </Group>
 
-                  {item.romaji && (
-                    <Text size="sm" c="dimmed" fs="italic">{item.romaji}</Text>
-                  )}
+                  {item.romaji && <Text size="sm" c="dimmed" fs="italic">{item.romaji}</Text>}
 
                   {item.partOfSpeech.length > 0 && (
                     <Group gap={4}>
@@ -128,7 +117,6 @@ export default function FavoritesPage() {
                   )}
 
                   <Text size="sm" lineClamp={2}>{item.meaning}</Text>
-
                   <Text size="xs" c="dimmed">Saved {timeAgo(item.savedAt)}</Text>
                 </Stack>
               </Card>

@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { ActionIcon, Tooltip } from "@mantine/core";
-import { isFavorited, toggleFavorite, type FavoriteItem } from "@/lib/favorites";
+import {
+  isFavorited,
+  toggleFavorite as toggleLocal,
+  type FavoriteItem,
+} from "@/lib/favorites";
 
 interface FavoriteButtonProps {
   item: Omit<FavoriteItem, "savedAt">;
@@ -10,18 +15,37 @@ interface FavoriteButtonProps {
 }
 
 export default function FavoriteButton({ item, size = "md" }: FavoriteButtonProps) {
+  const { data: session, status } = useSession();
+  const isLoggedIn = !!session?.user;
   const [favorited, setFavorited] = useState(false);
 
-  // Read from localStorage only on the client
   useEffect(() => {
-    setFavorited(isFavorited(item.id));
-  }, [item.id]);
+    if (status === "loading") return;
+    if (isLoggedIn) {
+      fetch(`/api/favorites/${item.id}`)
+        .then((r) => r.json())
+        .then((d) => setFavorited(d.favorited ?? false));
+    } else {
+      setFavorited(isFavorited(item.id));
+    }
+  }, [item.id, isLoggedIn, status]);
 
-  function handleClick(e: React.MouseEvent) {
+  async function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    const next = toggleFavorite(item);
-    setFavorited(next);
+
+    if (isLoggedIn) {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item),
+      });
+      const data = await res.json();
+      setFavorited(data.favorited);
+    } else {
+      const next = toggleLocal(item);
+      setFavorited(next);
+    }
   }
 
   return (

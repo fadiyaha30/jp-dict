@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { getFavorites } from "@/lib/favorites";
+import { getHistory } from "@/lib/history";
 import {
   Stack,
   TextInput,
@@ -37,6 +39,16 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid username or password.");
       } else {
+        // Migrate any localStorage data to the database
+        const favorites = getFavorites();
+        const history = getHistory();
+        if (favorites.length > 0 || history.length > 0) {
+          await fetch("/api/migrate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ favorites, history }),
+          });
+        }
         router.push(callbackUrl);
         router.refresh();
       }
