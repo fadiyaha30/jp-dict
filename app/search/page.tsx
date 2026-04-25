@@ -16,7 +16,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   if (query) {
     try {
-      results = search(query, searchMode, 20);
+      results = search(query, searchMode, 24);
     } catch {
       error = "Dictionary data not found. Run `npm run setup-data` to download it.";
     }
@@ -30,21 +30,23 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         {error ? (
           <div
             className="rounded-xl p-4 text-sm"
-            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}
+            style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}
           >
             {error}
           </div>
         ) : query && results.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16">
-            <span style={{ fontSize: "2.5rem", filter: "grayscale(0.3)" }}>🔍</span>
-            <p className="font-semibold text-white/80">No results for &ldquo;{query}&rdquo;</p>
-            <p className="text-sm text-white/40 text-center">
+            <p className="text-2xl">🔍</p>
+            <p className="font-semibold" style={{ color: "var(--text)" }}>
+              No results for &ldquo;{query}&rdquo;
+            </p>
+            <p className="text-sm text-center" style={{ color: "var(--muted)" }}>
               Try a different word, or switch between EN→JP and JP→EN modes.
             </p>
           </div>
         ) : query ? (
           <>
-            <p className="text-sm" style={{ color: "rgba(29,158,117,0.7)" }}>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
               {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

@@ -7,7 +7,7 @@ import { theme } from "@/lib/theme";
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <MantineProvider theme={theme} forceColorScheme="dark">
+      <MantineProvider theme={theme} forceColorScheme="light">
         {children}
       </MantineProvider>
     </SessionProvider>

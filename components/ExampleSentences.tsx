@@ -4,15 +4,16 @@ export interface ExampleWithFurigana extends TatoebaExample {
   furigana: string;
 }
 
-interface ExampleSentencesProps {
+export default function ExampleSentences({
+  examples,
+  word,
+}: {
   examples: ExampleWithFurigana[];
   word: string;
-}
-
-export default function ExampleSentences({ examples, word }: ExampleSentencesProps) {
+}) {
   if (examples.length === 0) {
     return (
-      <p className="text-sm text-center py-12" style={{ color: "rgba(255,255,255,0.3)" }}>
+      <p className="text-sm text-center py-10" style={{ color: "var(--muted)" }}>
         No example sentences found for this word.
       </p>
     );
@@ -23,29 +24,29 @@ export default function ExampleSentences({ examples, word }: ExampleSentencesPro
       {examples.map((ex) => (
         <div
           key={ex.id}
-          className="pl-4 py-1 transition-all"
-          style={{ borderLeft: "2px solid rgba(29,158,117,0.25)" }}
-          onMouseEnter={(e) => ((e.currentTarget.style.borderLeftColor = "rgba(29,158,117,0.7)"))}
-          onMouseLeave={(e) => ((e.currentTarget.style.borderLeftColor = "rgba(29,158,117,0.25)"))}
+          className="pl-4 py-0.5"
+          style={{ borderLeft: "2px solid var(--border)", transition: "border-color 0.15s" }}
+          onMouseEnter={(e) => ((e.currentTarget.style.borderLeftColor = "var(--accent-mid)"))}
+          onMouseLeave={(e) => ((e.currentTarget.style.borderLeftColor = "var(--border)"))}
         >
           <div
             className="jp-text furigana-text font-medium"
-            style={{ color: "rgba(255,255,255,0.88)" }}
+            style={{ color: "var(--text)" }}
             dangerouslySetInnerHTML={{ __html: ex.furigana }}
           />
-          <p className="text-sm mt-1 leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p className="text-sm mt-1 leading-relaxed" style={{ color: "var(--muted)" }}>
             {ex.english}
           </p>
         </div>
       ))}
 
-      <p className="text-xs text-right mt-2" style={{ color: "rgba(255,255,255,0.2)" }}>
+      <p className="text-xs text-right mt-1" style={{ color: "#c0b8ae" }}>
         via{" "}
         <a
           href={`https://tatoeba.org/en/sentences/search?from=jpn&to=eng&query=${encodeURIComponent(word)}`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: "rgba(29,158,117,0.5)" }}
+          style={{ color: "var(--muted)" }}
           className="hover:underline"
         >
           Tatoeba

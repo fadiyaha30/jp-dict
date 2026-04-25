@@ -22,11 +22,8 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (status === "loading") return;
-    if (isLoggedIn) {
-      fetch("/api/history").then((r) => r.json()).then(setItems);
-    } else {
-      setItems(getHistory());
-    }
+    if (isLoggedIn) fetch("/api/history").then((r) => r.json()).then(setItems);
+    else setItems(getHistory());
   }, [isLoggedIn, status]);
 
   async function handleRemove(timestamp: number) {
@@ -40,13 +37,8 @@ export default function HistoryPage() {
   }
 
   async function handleClear() {
-    if (isLoggedIn) {
-      await fetch("/api/history", { method: "DELETE" });
-      setItems([]);
-    } else {
-      clearHistory();
-      setItems([]);
-    }
+    if (isLoggedIn) { await fetch("/api/history", { method: "DELETE" }); setItems([]); }
+    else { clearHistory(); setItems([]); }
   }
 
   if (status === "loading") return null;
@@ -54,26 +46,18 @@ export default function HistoryPage() {
   return (
     <main className="max-w-3xl mx-auto px-4 py-8 w-full">
       <div className="flex flex-col gap-6">
-        {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-white/90 mb-1">History</h1>
-            <p className="text-sm text-white/30">
-              Recent word views &amp; searches ·{" "}
-              <span style={{ color: "rgba(29,158,117,0.7)" }}>
-                {isLoggedIn ? "synced" : "stored locally"}
-              </span>
+            <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>History</h1>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              Recent views &amp; searches · {isLoggedIn ? "synced" : "stored locally"}
             </p>
           </div>
           {items.length > 0 && (
             <button
               onClick={handleClear}
               className="text-xs px-3 py-1.5 rounded-lg transition-all"
-              style={{
-                background: "rgba(239,68,68,0.08)",
-                border: "1px solid rgba(239,68,68,0.2)",
-                color: "rgba(239,68,68,0.7)",
-              }}
+              style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
             >
               Clear all
             </button>
@@ -81,87 +65,58 @@ export default function HistoryPage() {
         </div>
 
         {items.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-20">
-            <span style={{ fontSize: "3rem" }}>📖</span>
-            <p className="font-semibold text-white/80">No history yet</p>
-            <p className="text-sm text-white/40 text-center">
-              Words you view and searches you make will appear here.
-            </p>
-            <Link
-              href="/"
-              className="mt-2 px-5 py-2 rounded-xl text-sm font-medium"
-              style={{
-                background: "rgba(29,158,117,0.15)",
-                border: "1px solid rgba(29,158,117,0.3)",
-                color: "#1D9E75",
-              }}
-            >
+          <div className="flex flex-col items-center gap-3 py-20">
+            <p className="text-4xl">📖</p>
+            <p className="font-semibold" style={{ color: "var(--text)" }}>No history yet</p>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>Words you view and searches you make will appear here.</p>
+            <Link href="/" className="mt-2 px-5 py-2 rounded-xl text-sm font-medium" style={{ background: "var(--accent)", color: "white" }}>
               Start searching
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {items.map((item) => (
               <div
                 key={item.timestamp}
-                className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all"
-                style={{
-                  background: "rgba(255,255,255,0.025)",
-                  border: "1px solid rgba(29,158,117,0.1)",
-                }}
+                className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all hover:border-[var(--accent-mid)]"
+                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
               >
                 {item.type === "word" ? (
-                  <Link
-                    href={`/word/${item.id}`}
-                    className="flex items-center gap-3 flex-1 min-w-0 no-underline"
-                  >
+                  <Link href={`/word/${item.id}`} className="flex items-center gap-3 flex-1 min-w-0 no-underline">
                     <span
-                      className="text-xs px-2 py-0.5 rounded-full shrink-0 font-medium"
-                      style={{
-                        background: "rgba(29,158,117,0.12)",
-                        border: "1px solid rgba(29,158,117,0.25)",
-                        color: "#1D9E75",
-                      }}
+                      className="text-xs px-2 py-0.5 rounded-md font-medium shrink-0"
+                      style={{ background: "var(--accent-pale)", color: "var(--accent)" }}
                     >
                       Word
                     </span>
-                    <span className="jp-text font-semibold text-white/85 truncate">{item.kanji}</span>
+                    <span className="jp-text font-semibold truncate" style={{ color: "var(--text)" }}>{item.kanji}</span>
                     {item.reading && item.reading !== item.kanji && (
-                      <span className="jp-text text-sm text-white/40 truncate">{item.reading}</span>
+                      <span className="jp-text text-sm truncate" style={{ color: "var(--muted)" }}>{item.reading}</span>
                     )}
-                    <span className="text-sm text-white/35 truncate flex-1">{item.meaning}</span>
+                    <span className="text-sm truncate flex-1" style={{ color: "var(--muted)" }}>{item.meaning}</span>
                   </Link>
                 ) : (
-                  <Link
-                    href={`/search?q=${encodeURIComponent(item.query)}&mode=${item.mode}`}
-                    className="flex items-center gap-3 flex-1 min-w-0 no-underline"
-                  >
+                  <Link href={`/search?q=${encodeURIComponent(item.query)}&mode=${item.mode}`} className="flex items-center gap-3 flex-1 min-w-0 no-underline">
                     <span
-                      className="text-xs px-2 py-0.5 rounded-full shrink-0 font-medium"
-                      style={{
-                        background: "rgba(99,102,241,0.12)",
-                        border: "1px solid rgba(99,102,241,0.25)",
-                        color: "#818cf8",
-                      }}
+                      className="text-xs px-2 py-0.5 rounded-md font-medium shrink-0"
+                      style={{ background: "#f1f0ff", color: "#6366f1" }}
                     >
                       Search
                     </span>
-                    <span className="text-white/70 truncate">&ldquo;{item.query}&rdquo;</span>
-                    <span className="text-xs text-white/30">{item.mode}</span>
+                    <span className="truncate" style={{ color: "var(--text)" }}>&ldquo;{item.query}&rdquo;</span>
+                    <span className="text-xs shrink-0" style={{ color: "var(--muted)" }}>{item.mode}</span>
                   </Link>
                 )}
 
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-white/25">{timeAgo(item.timestamp)}</span>
+                  <span className="text-xs" style={{ color: "#c0b8ae" }}>{timeAgo(item.timestamp)}</span>
                   <button
                     onClick={() => handleRemove(item.timestamp)}
+                    className="text-xs w-5 h-5 flex items-center justify-center rounded transition-colors"
+                    style={{ color: "var(--muted)", background: "none", border: "none" }}
                     aria-label="Remove"
-                    className="w-6 h-6 rounded-lg flex items-center justify-center transition-all text-white/20 hover:text-white/60"
-                    style={{ background: "transparent", border: "none" }}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    ×
                   </button>
                 </div>
               </div>

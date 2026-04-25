@@ -3,38 +3,39 @@ import type { SearchResult } from "@/lib/types";
 import FavoriteButton from "./FavoriteButton";
 
 const JLPT_COLORS: Record<string, string> = {
-  N1: "#ef4444", N2: "#f97316", N3: "#eab308", N4: "#14b8a6", N5: "#1D9E75",
+  N1: "#ef4444", N2: "#f97316", N3: "#d97706", N4: "#0d9488", N5: "#4f46e5",
 };
 
-interface WordCardProps {
-  result: SearchResult;
-}
-
-export default function WordCard({ result }: WordCardProps) {
+export default function WordCard({ result }: { result: SearchResult }) {
   return (
-    <div className="glass-card p-5 flex flex-col gap-3">
+    <div className="card bg-white p-5 flex flex-col gap-2.5">
+      {/* Top row */}
       <div className="flex justify-between items-start gap-2">
-        <Link href={`/word/${result.id}`} className="flex-1 min-w-0 no-underline">
+        <Link href={`/word/${result.id}`} className="flex-1 min-w-0 no-underline group">
           <div
-            className="jp-text font-bold leading-none mb-1"
-            style={{ fontSize: "clamp(1.75rem, 5vw, 2.25rem)", color: "rgba(255,255,255,0.95)" }}
+            className="jp-text font-bold leading-none transition-colors group-hover:text-[var(--accent)]"
+            style={{ fontSize: "clamp(1.6rem, 4vw, 2rem)", color: "var(--text)" }}
           >
             {result.kanji}
           </div>
           {result.reading && result.reading !== result.kanji && (
-            <div className="jp-text text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <div className="jp-text text-sm mt-1" style={{ color: "var(--muted)" }}>
               {result.reading}
+              {result.romaji && (
+                <span className="ml-2 not-italic" style={{ color: "#b5afa8" }}>
+                  {result.romaji}
+                </span>
+              )}
             </div>
           )}
         </Link>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
           {result.jlpt && (
             <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              className="text-xs font-bold px-2 py-0.5 rounded-md"
               style={{
-                background: JLPT_COLORS[result.jlpt] + "22",
-                border: `1px solid ${JLPT_COLORS[result.jlpt]}55`,
+                background: JLPT_COLORS[result.jlpt] + "18",
                 color: JLPT_COLORS[result.jlpt],
               }}
             >
@@ -56,32 +57,12 @@ export default function WordCard({ result }: WordCardProps) {
         </div>
       </div>
 
-      {result.romaji && (
-        <div className="text-sm italic" style={{ color: "rgba(255,255,255,0.35)" }}>
-          {result.romaji}
-        </div>
-      )}
+      {/* Divider */}
+      <div style={{ height: "1px", background: "var(--border)" }} />
 
-      {result.partOfSpeech.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {result.partOfSpeech.slice(0, 3).map((pos) => (
-            <span
-              key={pos}
-              className="text-xs px-2 py-0.5 rounded-full"
-              style={{
-                background: "rgba(29,158,117,0.1)",
-                border: "1px solid rgba(29,158,117,0.2)",
-                color: "rgba(29,158,117,0.9)",
-              }}
-            >
-              {pos}
-            </span>
-          ))}
-        </div>
-      )}
-
+      {/* Meaning */}
       <Link href={`/word/${result.id}`} className="no-underline">
-        <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
+        <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "var(--muted)" }}>
           {result.meanings.slice(0, 3).join("; ")}
         </p>
       </Link>

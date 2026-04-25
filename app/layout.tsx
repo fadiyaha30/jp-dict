@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={notoSansJP.variable} suppressHydrationWarning>
       <head>
-        <ColorSchemeScript forceColorScheme="dark" />
+        <ColorSchemeScript forceColorScheme="light" />
       </head>
       <body className="min-h-screen flex flex-col">
         <Providers>

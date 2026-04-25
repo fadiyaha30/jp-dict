@@ -11,23 +11,22 @@ interface UserExample {
   created_at: number;
 }
 
-const glassInput = {
-  background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(29,158,117,0.15)",
-  color: "rgba(255,255,255,0.85)",
-  borderRadius: "0.75rem",
+const inputStyle: React.CSSProperties = {
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: "0.625rem",
+  padding: "0.5rem 0.75rem",
+  fontSize: "0.875rem",
+  color: "var(--text)",
   outline: "none",
   width: "100%",
   fontFamily: "var(--font-noto-sans-jp), sans-serif",
-  fontSize: "0.875rem",
-  padding: "0.625rem 0.875rem",
-  transition: "border-color 0.2s",
+  transition: "border-color 0.15s",
 };
 
 export default function UserNotes({ wordId }: { wordId: string }) {
   const { data: session, status } = useSession();
   const isLoggedIn = !!session?.user;
-
   const [note, setNote] = useState("");
   const [savedNote, setSavedNote] = useState("");
   const [examples, setExamples] = useState<UserExample[]>([]);
@@ -86,11 +85,11 @@ export default function UserNotes({ wordId }: { wordId: string }) {
 
   if (!isLoggedIn) {
     return (
-      <p className="text-sm text-center py-12" style={{ color: "rgba(255,255,255,0.3)" }}>
-        <Link href="/login" style={{ color: "#1D9E75" }} className="hover:underline">
+      <p className="text-sm text-center py-10" style={{ color: "var(--muted)" }}>
+        <Link href="/login" style={{ color: "var(--accent)" }} className="hover:underline">
           Sign in
         </Link>{" "}
-        to add personal notes and examples for this word.
+        to add personal notes and examples.
       </p>
     );
   }
@@ -99,7 +98,7 @@ export default function UserNotes({ wordId }: { wordId: string }) {
     <div className="flex flex-col gap-6">
       {/* Note */}
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
           Personal Note
         </p>
         <textarea
@@ -107,97 +106,79 @@ export default function UserNotes({ wordId }: { wordId: string }) {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={3}
-          style={{ ...glassInput, resize: "vertical" }}
-          onFocus={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.45)")}
-          onBlur={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.15)")}
+          style={{ ...inputStyle, resize: "vertical" }}
+          onFocus={(e) => (e.target.style.borderColor = "var(--accent-mid)")}
+          onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
         />
         <div className="flex justify-end">
           <button
             disabled={note === savedNote || savingNote}
             onClick={handleSaveNote}
-            className="px-4 py-1.5 rounded-xl text-xs font-medium transition-all disabled:opacity-40"
-            style={{
-              background: "rgba(29,158,117,0.15)",
-              border: "1px solid rgba(29,158,117,0.3)",
-              color: "#1D9E75",
-            }}
+            className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40"
+            style={{ background: "var(--accent)", color: "white" }}
           >
             {savingNote ? "Saving…" : "Save note"}
           </button>
         </div>
       </div>
 
-      {/* My examples */}
+      {/* Examples */}
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
           My Examples
         </p>
 
         {examples.length === 0 && (
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No examples yet.</p>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>No examples yet.</p>
         )}
 
         {examples.map((ex) => (
           <div
             key={ex.id}
-            className="pl-4 py-1 group flex justify-between items-start gap-2 transition-all"
-            style={{ borderLeft: "2px solid rgba(29,158,117,0.25)" }}
+            className="pl-4 py-1 group flex justify-between items-start gap-2"
+            style={{ borderLeft: "2px solid var(--border)" }}
           >
             <div className="flex-1 min-w-0">
-              <p className="jp-text font-medium text-sm" style={{ color: "rgba(255,255,255,0.88)" }}>
-                {ex.text}
-              </p>
+              <p className="jp-text font-medium text-sm" style={{ color: "var(--text)" }}>{ex.text}</p>
               {ex.translation && (
-                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  {ex.translation}
-                </p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>{ex.translation}</p>
               )}
             </div>
             <button
-              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 w-6 h-6 rounded-lg flex items-center justify-center"
-              style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "rgba(239,68,68,0.7)" }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs px-2 py-1 rounded"
+              style={{ background: "#fee2e2", color: "#dc2626", border: "none" }}
               onClick={() => handleDeleteExample(ex.id)}
               aria-label="Delete"
             >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                <path d="M10 11v6M14 11v6" />
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-              </svg>
+              ×
             </button>
           </div>
         ))}
 
-        {/* Add form */}
         <form onSubmit={handleAddExample} className="flex flex-col gap-2 pt-1">
           <input
             placeholder="Your example sentence"
             value={newText}
             onChange={(e) => setNewText(e.target.value)}
-            style={glassInput}
+            style={inputStyle}
             className="jp-text"
-            onFocus={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.45)")}
-            onBlur={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.15)")}
+            onFocus={(e) => (e.target.style.borderColor = "var(--accent-mid)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
           />
           <input
             placeholder="Translation (optional)"
             value={newTranslation}
             onChange={(e) => setNewTranslation(e.target.value)}
-            style={glassInput}
-            onFocus={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.45)")}
-            onBlur={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.15)")}
+            style={inputStyle}
+            onFocus={(e) => (e.target.style.borderColor = "var(--accent-mid)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={!newText.trim() || addingExample}
-              className="px-4 py-1.5 rounded-xl text-xs font-medium transition-all disabled:opacity-40"
-              style={{
-                background: "rgba(29,158,117,0.15)",
-                border: "1px solid rgba(29,158,117,0.3)",
-                color: "#1D9E75",
-              }}
+              className="px-4 py-1.5 rounded-lg text-xs font-medium disabled:opacity-40"
+              style={{ background: "var(--accent)", color: "white" }}
             >
               {addingExample ? "Adding…" : "Add example"}
             </button>
