@@ -48,9 +48,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      
-      <main className="max-w-2xl mx-auto px-4 py-8">
+    <main className="max-w-2xl mx-auto px-4 py-8">
         <Stack gap="xl">
           <Group justify="space-between" align="center">
             <Stack gap={2}>
@@ -155,7 +153,6 @@ export default function HistoryPage() {
             </Stack>
           )}
         </Stack>
-      </main>
-    </div>
+    </main>
   );
 }

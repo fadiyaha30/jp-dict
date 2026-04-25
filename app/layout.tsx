@@ -28,10 +28,12 @@ export default function RootLayout({
       <head>
         <ColorSchemeScript forceColorScheme="light" />
       </head>
-      <body>
+      <body className="min-h-screen flex flex-col">
         <MantineProvider theme={theme} forceColorScheme="light">
           <Navbar />
-          {children}
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
         </MantineProvider>
       </body>
     </html>

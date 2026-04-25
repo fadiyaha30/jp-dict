@@ -25,9 +25,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   }
 
   return (
-    <div className="min-h-screen">
-      
-      <main className="max-w-4xl mx-auto px-4 py-8">
+    <main className="max-w-4xl mx-auto px-4 py-8">
         <Stack gap="xl">
           {/* Search bar */}
           <SearchBar defaultQuery={query} defaultMode={searchMode} size="md" />
@@ -59,7 +57,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </>
           ) : null}
         </Stack>
-      </main>
-    </div>
+    </main>
   );
 }

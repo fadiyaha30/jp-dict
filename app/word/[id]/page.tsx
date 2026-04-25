@@ -28,9 +28,7 @@ export default async function WordPage({ params }: WordPageProps) {
   const { word, result } = detail;
 
   return (
-    <div className="min-h-screen">
-      
-      <main className="max-w-2xl mx-auto px-4 py-8">
+    <main className="max-w-2xl mx-auto px-4 py-8">
         <Stack gap="xl">
           <Breadcrumbs>
             <Anchor component={Link} href="/" size="sm">
@@ -52,7 +50,6 @@ export default async function WordPage({ params }: WordPageProps) {
           />
           <WordDetail word={word} result={result} />
         </Stack>
-      </main>
-    </div>
+    </main>
   );
 }
