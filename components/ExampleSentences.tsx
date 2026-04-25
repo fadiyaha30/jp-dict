@@ -1,8 +1,12 @@
 import { Stack, Text, Paper, Divider, Anchor } from "@mantine/core";
 import type { TatoebaExample } from "@/lib/tatoeba";
 
+export interface ExampleWithFurigana extends TatoebaExample {
+  furigana: string; // HTML string with <ruby> tags
+}
+
 interface ExampleSentencesProps {
-  examples: TatoebaExample[];
+  examples: ExampleWithFurigana[];
   word: string;
 }
 
@@ -33,10 +37,12 @@ export default function ExampleSentences({ examples, word }: ExampleSentencesPro
         {examples.map((ex) => (
           <Paper key={ex.id} withBorder p="md" radius="md">
             <Stack gap={6}>
-              <Text size="md" fw={500} className="jp-text" style={{ lineHeight: 1.6 }}>
-                {ex.japanese}
-              </Text>
-              <Text size="sm" c="dimmed" style={{ lineHeight: 1.5 }}>
+              {/* Furigana HTML — ruby tags are safe, generated server-side from our own data */}
+              <div
+                className="jp-text furigana-text"
+                dangerouslySetInnerHTML={{ __html: ex.furigana }}
+              />
+              <Text size="sm" c="dimmed" style={{ lineHeight: 1.6 }}>
                 {ex.english}
               </Text>
             </Stack>

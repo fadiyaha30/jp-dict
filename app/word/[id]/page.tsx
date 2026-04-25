@@ -6,6 +6,7 @@ import WordHistoryTracker from "@/components/WordHistoryTracker";
 import ExampleSentences from "@/components/ExampleSentences";
 import { getWordDetail } from "@/lib/dictionary";
 import { fetchExamples } from "@/lib/tatoeba";
+import { toFurigana } from "@/lib/furigana";
 
 interface WordPageProps {
   params: Promise<{ id: string }>;
@@ -30,7 +31,13 @@ export default async function WordPage({ params }: WordPageProps) {
 
   // Fetch examples using kanji form if available, else kana
   const searchWord = result.kanji !== result.reading ? result.kanji : result.reading;
-  const examples = await fetchExamples(searchWord, 5);
+  const rawExamples = await fetchExamples(searchWord, 5);
+  const examples = await Promise.all(
+    rawExamples.map(async (ex) => ({
+      ...ex,
+      furigana: await toFurigana(ex.japanese),
+    }))
+  );
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8">

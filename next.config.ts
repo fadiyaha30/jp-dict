@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@mantine/core", "@mantine/hooks"],
   },
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "kuroshiro", "kuroshiro-analyzer-kuromoji", "kuromoji"],
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
