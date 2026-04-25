@@ -3,6 +3,7 @@ import { Anchor, Breadcrumbs, Stack } from "@mantine/core";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import WordDetail from "@/components/WordDetail";
+import WordHistoryTracker from "@/components/WordHistoryTracker";
 import { getWordDetail } from "@/lib/dictionary";
 
 interface WordPageProps {
@@ -44,6 +45,12 @@ export default async function WordPage({ params }: WordPageProps) {
             </span>
           </Breadcrumbs>
 
+          <WordHistoryTracker
+            id={result.id}
+            kanji={result.kanji}
+            reading={result.reading}
+            meaning={result.meanings[0] ?? ""}
+          />
           <WordDetail word={word} result={result} />
         </Stack>
       </main>

@@ -131,19 +131,27 @@ export function search(
       }
     }
   } else {
-    // Search English glosses
+    // Search English glosses — ranked: exact match > word-start > substring
+    const exact: DictWord[] = [];
+    const wordStart: DictWord[] = [];
+    const substring: DictWord[] = [];
+    const wordBoundary = new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+
     for (const word of dict.words) {
-      const matchGloss = word.sense.some((s) =>
-        s.gloss.some((g) => g.toLowerCase().includes(q))
-      );
-      if (matchGloss) {
-        results.push(word);
-        if (results.length >= limit) break;
+      const glosses = word.sense.flatMap((s) => s.gloss.map((g) => g.toLowerCase()));
+      if (glosses.some((g) => g === q)) {
+        exact.push(word);
+      } else if (glosses.some((g) => wordBoundary.test(g))) {
+        wordStart.push(word);
+      } else if (glosses.some((g) => g.includes(q))) {
+        substring.push(word);
       }
     }
+
+    results.push(...exact, ...wordStart, ...substring);
   }
 
-  return results.map(wordToResult);
+  return results.slice(0, limit).map(wordToResult);
 }
 
 export function getWordById(id: string): DictWord | null {

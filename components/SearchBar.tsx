@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { pushSearch } from "@/lib/history";
 import {
   TextInput,
   SegmentedControl,
@@ -31,6 +32,7 @@ export default function SearchBar({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
+    pushSearch(query.trim(), mode);
     startTransition(() => {
       router.push(`/search?q=${encodeURIComponent(query.trim())}&mode=${mode}`);
     });

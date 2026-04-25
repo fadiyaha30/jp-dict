@@ -23,12 +23,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={notoSansJP.variable}>
+    <html lang="en" className={notoSansJP.variable} suppressHydrationWarning>
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript forceColorScheme="light" />
       </head>
       <body>
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProvider theme={theme} forceColorScheme="light">
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );

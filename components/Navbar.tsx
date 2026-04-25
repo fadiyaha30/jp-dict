@@ -20,9 +20,16 @@ export default function Navbar() {
               </Text>
             </Group>
           </Link>
-          <Text size="xs" c="dimmed">
-            English–Japanese Dictionary
-          </Text>
+          <Group gap="lg">
+            <Link href="/history" style={{ textDecoration: "none" }}>
+              <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
+                History
+              </Text>
+            </Link>
+            <Text size="xs" c="dimmed">
+              EN–JP Dictionary
+            </Text>
+          </Group>
         </Group>
       </div>
     </header>
