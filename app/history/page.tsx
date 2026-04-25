@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Stack, Text, Group, Badge, ActionIcon, Button, Paper, Anchor } from "@mantine/core";
 import { getHistory, clearHistory, removeItem, type HistoryItem } from "@/lib/history";
 
 function timeAgo(ts: number): string {
@@ -53,72 +52,123 @@ export default function HistoryPage() {
   if (status === "loading") return null;
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
-      <Stack gap="xl">
-        <Group justify="space-between" align="center">
-          <Stack gap={2}>
-            <Text size="xl" fw={700}>History</Text>
-            <Text size="sm" c="dimmed">
-              Your recent searches and word views ·{" "}
-              {isLoggedIn ? "synced to your account" : "stored locally"}
-            </Text>
-          </Stack>
+    <main className="max-w-3xl mx-auto px-4 py-8 w-full">
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-white/90 mb-1">History</h1>
+            <p className="text-sm text-white/30">
+              Recent word views &amp; searches ·{" "}
+              <span style={{ color: "rgba(29,158,117,0.7)" }}>
+                {isLoggedIn ? "synced" : "stored locally"}
+              </span>
+            </p>
+          </div>
           {items.length > 0 && (
-            <Button variant="subtle" color="red" size="xs" onClick={handleClear}>
+            <button
+              onClick={handleClear}
+              className="text-xs px-3 py-1.5 rounded-lg transition-all"
+              style={{
+                background: "rgba(239,68,68,0.08)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                color: "rgba(239,68,68,0.7)",
+              }}
+            >
               Clear all
-            </Button>
+            </button>
           )}
-        </Group>
+        </div>
 
         {items.length === 0 ? (
-          <Stack align="center" py="xl" gap="sm">
-            <Text size="2rem">📖</Text>
-            <Text fw={600}>No history yet</Text>
-            <Text size="sm" c="dimmed">Words you view and searches you make will appear here.</Text>
-            <Button component={Link} href="/" color="green" variant="light" radius="xl" mt="sm">
+          <div className="flex flex-col items-center gap-4 py-20">
+            <span style={{ fontSize: "3rem" }}>📖</span>
+            <p className="font-semibold text-white/80">No history yet</p>
+            <p className="text-sm text-white/40 text-center">
+              Words you view and searches you make will appear here.
+            </p>
+            <Link
+              href="/"
+              className="mt-2 px-5 py-2 rounded-xl text-sm font-medium"
+              style={{
+                background: "rgba(29,158,117,0.15)",
+                border: "1px solid rgba(29,158,117,0.3)",
+                color: "#1D9E75",
+              }}
+            >
               Start searching
-            </Button>
-          </Stack>
+            </Link>
+          </div>
         ) : (
-          <Stack gap="xs">
+          <div className="flex flex-col gap-2">
             {items.map((item) => (
-              <Paper key={item.timestamp} withBorder p="sm" radius="md">
-                <Group justify="space-between" wrap="nowrap">
-                  {item.type === "word" ? (
-                    <Anchor component={Link} href={`/word/${item.id}`} underline="never" style={{ flex: 1, minWidth: 0 }}>
-                      <Group gap="sm" wrap="nowrap">
-                        <Badge color="green" variant="light" size="sm" style={{ flexShrink: 0 }}>Word</Badge>
-                        <Text fw={600} className="jp-text" truncate>{item.kanji}</Text>
-                        {item.reading && item.reading !== item.kanji && (
-                          <Text size="sm" c="dimmed" className="jp-text" truncate>{item.reading}</Text>
-                        )}
-                        <Text size="sm" c="dimmed" truncate style={{ flex: 1 }}>{item.meaning}</Text>
-                      </Group>
-                    </Anchor>
-                  ) : (
-                    <Anchor component={Link} href={`/search?q=${encodeURIComponent(item.query)}&mode=${item.mode}`} underline="never" style={{ flex: 1, minWidth: 0 }}>
-                      <Group gap="sm" wrap="nowrap">
-                        <Badge color="blue" variant="light" size="sm" style={{ flexShrink: 0 }}>Search</Badge>
-                        <Text truncate>"{item.query}"</Text>
-                        <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>{item.mode}</Text>
-                      </Group>
-                    </Anchor>
-                  )}
-                  <Group gap="xs" style={{ flexShrink: 0 }}>
-                    <Text size="xs" c="dimmed">{timeAgo(item.timestamp)}</Text>
-                    <ActionIcon variant="subtle" color="gray" size="sm"
-                      onClick={() => handleRemove(item.timestamp)} aria-label="Remove">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    </ActionIcon>
-                  </Group>
-                </Group>
-              </Paper>
+              <div
+                key={item.timestamp}
+                className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.025)",
+                  border: "1px solid rgba(29,158,117,0.1)",
+                }}
+              >
+                {item.type === "word" ? (
+                  <Link
+                    href={`/word/${item.id}`}
+                    className="flex items-center gap-3 flex-1 min-w-0 no-underline"
+                  >
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full shrink-0 font-medium"
+                      style={{
+                        background: "rgba(29,158,117,0.12)",
+                        border: "1px solid rgba(29,158,117,0.25)",
+                        color: "#1D9E75",
+                      }}
+                    >
+                      Word
+                    </span>
+                    <span className="jp-text font-semibold text-white/85 truncate">{item.kanji}</span>
+                    {item.reading && item.reading !== item.kanji && (
+                      <span className="jp-text text-sm text-white/40 truncate">{item.reading}</span>
+                    )}
+                    <span className="text-sm text-white/35 truncate flex-1">{item.meaning}</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/search?q=${encodeURIComponent(item.query)}&mode=${item.mode}`}
+                    className="flex items-center gap-3 flex-1 min-w-0 no-underline"
+                  >
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full shrink-0 font-medium"
+                      style={{
+                        background: "rgba(99,102,241,0.12)",
+                        border: "1px solid rgba(99,102,241,0.25)",
+                        color: "#818cf8",
+                      }}
+                    >
+                      Search
+                    </span>
+                    <span className="text-white/70 truncate">&ldquo;{item.query}&rdquo;</span>
+                    <span className="text-xs text-white/30">{item.mode}</span>
+                  </Link>
+                )}
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs text-white/25">{timeAgo(item.timestamp)}</span>
+                  <button
+                    onClick={() => handleRemove(item.timestamp)}
+                    aria-label="Remove"
+                    className="w-6 h-6 rounded-lg flex items-center justify-center transition-all text-white/20 hover:text-white/60"
+                    style={{ background: "transparent", border: "none" }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             ))}
-          </Stack>
+          </div>
         )}
-      </Stack>
+      </div>
     </main>
   );
 }

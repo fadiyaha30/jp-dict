@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Stack, Text, Group, Badge, Button, SimpleGrid, Card, ActionIcon, Tooltip } from "@mantine/core";
 import { getFavorites, removeFavorite, type FavoriteItem } from "@/lib/favorites";
 
 const JLPT_COLORS: Record<string, string> = {
-  N1: "red", N2: "orange", N3: "yellow", N4: "teal", N5: "green",
+  N1: "#ef4444", N2: "#f97316", N3: "#eab308", N4: "#14b8a6", N5: "#1D9E75",
 };
 
 function timeAgo(ts: number): string {
@@ -51,79 +50,107 @@ export default function FavoritesPage() {
   if (status === "loading") return null;
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      <Stack gap="xl">
-        <Group justify="space-between" align="center">
-          <Stack gap={2}>
-            <Text size="xl" fw={700}>Favorites</Text>
-            <Text size="sm" c="dimmed">
-              {items.length} saved word{items.length !== 1 ? "s" : ""}
-              {isLoggedIn ? " · synced to your account" : " · stored locally"}
-            </Text>
-          </Stack>
-        </Group>
+    <main className="max-w-6xl mx-auto px-4 py-8 w-full">
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-white/90 mb-1">Favorites</h1>
+          <p className="text-sm" style={{ color: "rgba(29,158,117,0.7)" }}>
+            {items.length} saved word{items.length !== 1 ? "s" : ""}
+            {" · "}
+            <span className="text-white/30">{isLoggedIn ? "synced to your account" : "stored locally"}</span>
+          </p>
+        </div>
 
         {items.length === 0 ? (
-          <Stack align="center" py="xl" gap="sm">
-            <Text size="2rem">⭐</Text>
-            <Text fw={600}>No favorites yet</Text>
-            <Text size="sm" c="dimmed" ta="center">
-              Star words on search results or word detail pages to save them here.
-            </Text>
-            <Button component={Link} href="/" color="green" variant="light" radius="xl" mt="sm">
+          <div className="flex flex-col items-center gap-4 py-20">
+            <span style={{ fontSize: "3rem", filter: "grayscale(0.2)" }}>⭐</span>
+            <p className="font-semibold text-white/80">No favorites yet</p>
+            <p className="text-sm text-white/40 text-center max-w-xs">
+              Star words on search results or word pages to save them here.
+            </p>
+            <Link
+              href="/"
+              className="mt-2 px-5 py-2 rounded-xl text-sm font-medium transition-all"
+              style={{
+                background: "rgba(29,158,117,0.15)",
+                border: "1px solid rgba(29,158,117,0.3)",
+                color: "#1D9E75",
+              }}
+            >
               Start searching
-            </Button>
-          </Stack>
+            </Link>
+          </div>
         ) : (
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((item) => (
-              <Card key={item.id} withBorder shadow="xs" radius="md" padding="lg"
-                className="hover:border-[#1D9E75] transition-colors">
-                <Stack gap="xs">
-                  <Group justify="space-between" align="flex-start" wrap="nowrap">
-                    <Link href={`/word/${item.id}`} style={{ textDecoration: "none", color: "inherit", flex: 1 }}>
-                      <Text size="2rem" fw={700} className="jp-text" style={{ lineHeight: 1.2 }}>
-                        {item.kanji}
-                      </Text>
-                      {item.reading && item.reading !== item.kanji && (
-                        <Text size="sm" c="dimmed" className="jp-text" mt={2}>{item.reading}</Text>
-                      )}
-                    </Link>
-                    <Group gap="xs">
-                      {item.jlpt && (
-                        <Badge color={JLPT_COLORS[item.jlpt] ?? "gray"} variant="light" size="sm">
-                          JLPT {item.jlpt}
-                        </Badge>
-                      )}
-                      <Tooltip label="Remove from favorites" withArrow>
-                        <ActionIcon variant="filled" color="yellow" size="sm" radius="xl"
-                          onClick={() => handleRemove(item.id)} aria-label="Remove from favorites">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                          </svg>
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  </Group>
+              <div key={item.id} className="glass-card p-5 flex flex-col gap-3">
+                <div className="flex justify-between items-start gap-2">
+                  <Link href={`/word/${item.id}`} className="flex-1 min-w-0 no-underline">
+                    <div
+                      className="jp-text font-bold leading-none mb-1"
+                      style={{ fontSize: "2rem", color: "rgba(255,255,255,0.95)" }}
+                    >
+                      {item.kanji}
+                    </div>
+                    {item.reading && item.reading !== item.kanji && (
+                      <div className="jp-text text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        {item.reading}
+                      </div>
+                    )}
+                  </Link>
 
-                  {item.romaji && <Text size="sm" c="dimmed" fs="italic">{item.romaji}</Text>}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {item.jlpt && (
+                      <span
+                        className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: JLPT_COLORS[item.jlpt] + "22",
+                          border: `1px solid ${JLPT_COLORS[item.jlpt]}55`,
+                          color: JLPT_COLORS[item.jlpt],
+                        }}
+                      >
+                        {item.jlpt}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleRemove(item.id)}
+                      aria-label="Remove from favorites"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                      style={{ background: "rgba(234,179,8,0.15)", border: "1px solid rgba(234,179,8,0.3)", color: "#eab308" }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
 
-                  {item.partOfSpeech.length > 0 && (
-                    <Group gap={4}>
-                      {item.partOfSpeech.slice(0, 3).map((pos) => (
-                        <Badge key={pos} color="gray" variant="outline" size="xs">{pos}</Badge>
-                      ))}
-                    </Group>
-                  )}
+                {item.romaji && (
+                  <p className="text-sm italic" style={{ color: "rgba(255,255,255,0.3)" }}>{item.romaji}</p>
+                )}
 
-                  <Text size="sm" lineClamp={2}>{item.meaning}</Text>
-                  <Text size="xs" c="dimmed">Saved {timeAgo(item.savedAt)}</Text>
-                </Stack>
-              </Card>
+                {item.partOfSpeech.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.partOfSpeech.slice(0, 3).map((pos) => (
+                      <span
+                        key={pos}
+                        className="text-xs px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(29,158,117,0.1)", border: "1px solid rgba(29,158,117,0.2)", color: "rgba(29,158,117,0.9)" }}
+                      >
+                        {pos}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>{item.meaning}</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>Saved {timeAgo(item.savedAt)}</p>
+              </div>
             ))}
-          </SimpleGrid>
+          </div>
         )}
-      </Stack>
+      </div>
     </main>
   );
 }

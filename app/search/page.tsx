@@ -1,4 +1,3 @@
-import { SimpleGrid, Stack, Text, Alert } from "@mantine/core";
 import SearchBar from "@/components/SearchBar";
 import WordCard from "@/components/WordCard";
 import { search } from "@/lib/dictionary";
@@ -12,51 +11,50 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = q ?? "";
   const searchMode = (mode ?? "auto") as "auto" | "en" | "jp";
 
-  let results = [];
+  let results: any[] = [];
   let error: string | null = null;
 
   if (query) {
     try {
       results = search(query, searchMode, 20);
-    } catch (e) {
-      error =
-        "Dictionary data not found. Run `npm run setup-data` to download it.";
+    } catch {
+      error = "Dictionary data not found. Run `npm run setup-data` to download it.";
     }
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-        <Stack gap="xl">
-          {/* Search bar */}
-          <SearchBar defaultQuery={query} defaultMode={searchMode} size="md" />
+    <main className="max-w-6xl mx-auto px-4 py-8 w-full">
+      <div className="flex flex-col gap-6">
+        <SearchBar defaultQuery={query} defaultMode={searchMode} size="md" />
 
-          {/* Results */}
-          {error ? (
-            <Alert color="red" title="Data missing">
-              {error}
-            </Alert>
-          ) : query && results.length === 0 ? (
-            <Stack align="center" py="xl" gap="sm">
-              <Text size="2rem">🔍</Text>
-              <Text fw={600}>No results for "{query}"</Text>
-              <Text size="sm" c="dimmed">
-                Try a different word, or switch between EN→JP and JP→EN modes.
-              </Text>
-            </Stack>
-          ) : query ? (
-            <>
-              <Text size="sm" c="dimmed">
-                {results.length} result{results.length !== 1 ? "s" : ""} for "
-                {query}"
-              </Text>
-              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                {results.map((result) => (
-                  <WordCard key={result.id} result={result} />
-                ))}
-              </SimpleGrid>
-            </>
-          ) : null}
-        </Stack>
+        {error ? (
+          <div
+            className="rounded-xl p-4 text-sm"
+            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}
+          >
+            {error}
+          </div>
+        ) : query && results.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16">
+            <span style={{ fontSize: "2.5rem", filter: "grayscale(0.3)" }}>🔍</span>
+            <p className="font-semibold text-white/80">No results for &ldquo;{query}&rdquo;</p>
+            <p className="text-sm text-white/40 text-center">
+              Try a different word, or switch between EN→JP and JP→EN modes.
+            </p>
+          </div>
+        ) : query ? (
+          <>
+            <p className="text-sm" style={{ color: "rgba(29,158,117,0.7)" }}>
+              {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {results.map((result) => (
+                <WordCard key={result.id} result={result} />
+              ))}
+            </div>
+          </>
+        ) : null}
+      </div>
     </main>
   );
 }

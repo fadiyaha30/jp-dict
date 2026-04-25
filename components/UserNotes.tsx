@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Textarea, TextInput, Button, Group, ActionIcon, Text, Anchor } from "@mantine/core";
 
 interface UserExample {
   id: number;
@@ -11,6 +10,19 @@ interface UserExample {
   translation: string;
   created_at: number;
 }
+
+const glassInput = {
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(29,158,117,0.15)",
+  color: "rgba(255,255,255,0.85)",
+  borderRadius: "0.75rem",
+  outline: "none",
+  width: "100%",
+  fontFamily: "var(--font-noto-sans-jp), sans-serif",
+  fontSize: "0.875rem",
+  padding: "0.625rem 0.875rem",
+  transition: "border-color 0.2s",
+};
 
 export default function UserNotes({ wordId }: { wordId: string }) {
   const { data: session, status } = useSession();
@@ -74,112 +86,122 @@ export default function UserNotes({ wordId }: { wordId: string }) {
 
   if (!isLoggedIn) {
     return (
-      <Text size="sm" c="dimmed" ta="center" py="xl">
-        <Anchor component={Link} href="/login" c="green">Sign in</Anchor>{" "}
+      <p className="text-sm text-center py-12" style={{ color: "rgba(255,255,255,0.3)" }}>
+        <Link href="/login" style={{ color: "#1D9E75" }} className="hover:underline">
+          Sign in
+        </Link>{" "}
         to add personal notes and examples for this word.
-      </Text>
+      </p>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Note */}
-      <div className="space-y-2">
-        <Text size="xs" fw={600} tt="uppercase" c="dimmed" className="tracking-widest">
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
           Personal Note
-        </Text>
-        <Textarea
+        </p>
+        <textarea
           placeholder="Memory tricks, usage tips, context…"
           value={note}
-          onChange={(e) => setNote(e.currentTarget.value)}
-          minRows={3}
-          autosize
-          radius="md"
+          onChange={(e) => setNote(e.target.value)}
+          rows={3}
+          style={{ ...glassInput, resize: "vertical" }}
+          onFocus={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.45)")}
+          onBlur={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.15)")}
         />
-        <Group justify="flex-end">
-          <Button
-            size="xs"
-            color="green"
-            variant="light"
-            radius="xl"
-            loading={savingNote}
-            disabled={note === savedNote}
+        <div className="flex justify-end">
+          <button
+            disabled={note === savedNote || savingNote}
             onClick={handleSaveNote}
+            className="px-4 py-1.5 rounded-xl text-xs font-medium transition-all disabled:opacity-40"
+            style={{
+              background: "rgba(29,158,117,0.15)",
+              border: "1px solid rgba(29,158,117,0.3)",
+              color: "#1D9E75",
+            }}
           >
-            Save note
-          </Button>
-        </Group>
+            {savingNote ? "Saving…" : "Save note"}
+          </button>
+        </div>
       </div>
 
       {/* My examples */}
-      <div className="space-y-3">
-        <Text size="xs" fw={600} tt="uppercase" c="dimmed" className="tracking-widest">
+      <div className="flex flex-col gap-3">
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
           My Examples
-        </Text>
+        </p>
 
         {examples.length === 0 && (
-          <Text size="sm" c="dimmed">No examples yet.</Text>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No examples yet.</p>
         )}
 
         {examples.map((ex) => (
           <div
             key={ex.id}
-            className="pl-4 border-l-2 group flex justify-between items-start gap-2"
-            style={{ borderColor: "#1D9E7555" }}
+            className="pl-4 py-1 group flex justify-between items-start gap-2 transition-all"
+            style={{ borderLeft: "2px solid rgba(29,158,117,0.25)" }}
           >
             <div className="flex-1 min-w-0">
-              <p className="jp-text text-gray-900 font-medium text-sm">{ex.text}</p>
+              <p className="jp-text font-medium text-sm" style={{ color: "rgba(255,255,255,0.88)" }}>
+                {ex.text}
+              </p>
               {ex.translation && (
-                <p className="text-xs text-gray-500 mt-0.5">{ex.translation}</p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  {ex.translation}
+                </p>
               )}
             </div>
-            <ActionIcon
-              variant="subtle"
-              color="red"
-              size="sm"
-              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            <button
+              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 w-6 h-6 rounded-lg flex items-center justify-center"
+              style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "rgba(239,68,68,0.7)" }}
               onClick={() => handleDeleteExample(ex.id)}
               aria-label="Delete"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                 <path d="M10 11v6M14 11v6" />
                 <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
               </svg>
-            </ActionIcon>
+            </button>
           </div>
         ))}
 
         {/* Add form */}
-        <form onSubmit={handleAddExample} className="space-y-2 pt-1">
-          <TextInput
+        <form onSubmit={handleAddExample} className="flex flex-col gap-2 pt-1">
+          <input
             placeholder="Your example sentence"
             value={newText}
-            onChange={(e) => setNewText(e.currentTarget.value)}
-            radius="md"
-            size="sm"
-            classNames={{ input: "jp-text" }}
+            onChange={(e) => setNewText(e.target.value)}
+            style={glassInput}
+            className="jp-text"
+            onFocus={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.45)")}
+            onBlur={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.15)")}
           />
-          <TextInput
+          <input
             placeholder="Translation (optional)"
             value={newTranslation}
-            onChange={(e) => setNewTranslation(e.currentTarget.value)}
-            radius="md"
-            size="sm"
+            onChange={(e) => setNewTranslation(e.target.value)}
+            style={glassInput}
+            onFocus={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.45)")}
+            onBlur={(e) => (e.target.style.borderColor = "rgba(29,158,117,0.15)")}
           />
-          <Group justify="flex-end">
-            <Button
+          <div className="flex justify-end">
+            <button
               type="submit"
-              size="xs"
-              color="green"
-              radius="xl"
-              loading={addingExample}
-              disabled={!newText.trim()}
+              disabled={!newText.trim() || addingExample}
+              className="px-4 py-1.5 rounded-xl text-xs font-medium transition-all disabled:opacity-40"
+              style={{
+                background: "rgba(29,158,117,0.15)",
+                border: "1px solid rgba(29,158,117,0.3)",
+                color: "#1D9E75",
+              }}
             >
-              Add example
-            </Button>
-          </Group>
+              {addingExample ? "Adding…" : "Add example"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

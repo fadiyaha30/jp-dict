@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Group, Text, Badge } from "@mantine/core";
+import { usePathname } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 
 interface NavbarClientProps {
@@ -9,60 +9,77 @@ interface NavbarClientProps {
 }
 
 export default function NavbarClient({ username }: NavbarClientProps) {
+  const pathname = usePathname();
+
+  const navLink = (href: string, label: string) => (
+    <Link
+      href={href}
+      className={`text-sm transition-colors ${
+        pathname === href
+          ? "text-[#1D9E75] font-medium"
+          : "text-white/50 hover:text-white/90"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+
   return (
-    <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-      <div className="max-w-4xl mx-auto px-4 py-3">
-        <Group justify="space-between" align="center">
-          <Link href="/" style={{ textDecoration: "none" }}>
-            <Group gap="xs" align="center">
-              <Text
-                size="xl"
-                fw={700}
-                style={{ color: "#1D9E75", letterSpacing: "-0.02em" }}
+    <header
+      className="sticky top-0 z-50 border-b"
+      style={{
+        background: "rgba(9,15,11,0.7)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderColor: "rgba(29,158,117,0.12)",
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <span
+            className="jp-text text-2xl font-bold"
+            style={{ color: "#1D9E75", textShadow: "0 0 20px rgba(29,158,117,0.5)" }}
+          >
+            辞
+          </span>
+          <span className="font-semibold text-white/90 tracking-tight">JDict</span>
+        </Link>
+
+        <nav className="flex items-center gap-6">
+          {navLink("/favorites", "Favorites")}
+          {navLink("/history", "History")}
+
+          {username ? (
+            <div className="flex items-center gap-3">
+              <span
+                className="text-xs px-3 py-1 rounded-full font-medium"
+                style={{
+                  background: "rgba(29,158,117,0.15)",
+                  border: "1px solid rgba(29,158,117,0.3)",
+                  color: "#1D9E75",
+                }}
               >
-                辞
-              </Text>
-              <Text fw={600} size="lg" c="dark">
-                JDict
-              </Text>
-            </Group>
-          </Link>
-
-          <Group gap="lg" align="center">
-            <Link href="/favorites" style={{ textDecoration: "none" }}>
-              <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
-                Favorites
-              </Text>
-            </Link>
-            <Link href="/history" style={{ textDecoration: "none" }}>
-              <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
-                History
-              </Text>
-            </Link>
-
-            {username ? (
-              <Group gap="sm" align="center">
-                <Badge color="green" variant="light" size="sm">
-                  {username}
-                </Badge>
-                <LogoutButton />
-              </Group>
-            ) : (
-              <Group gap="sm">
-                <Link href="/login" style={{ textDecoration: "none" }}>
-                  <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
-                    Sign in
-                  </Text>
-                </Link>
-                <Link href="/register" style={{ textDecoration: "none" }}>
-                  <Text size="sm" fw={500} style={{ color: "#1D9E75" }}>
-                    Register
-                  </Text>
-                </Link>
-              </Group>
-            )}
-          </Group>
-        </Group>
+                {username}
+              </span>
+              <LogoutButton />
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              {navLink("/login", "Sign in")}
+              <Link
+                href="/register"
+                className="text-sm px-3 py-1 rounded-full font-medium transition-all"
+                style={{
+                  background: "rgba(29,158,117,0.15)",
+                  border: "1px solid rgba(29,158,117,0.3)",
+                  color: "#1D9E75",
+                }}
+              >
+                Register
+              </Link>
+            </div>
+          )}
+        </nav>
       </div>
     </header>
   );
