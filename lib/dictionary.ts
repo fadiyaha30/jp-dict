@@ -119,17 +119,26 @@ export function search(
   const results: DictWord[] = [];
 
   if (useJapanese) {
-    // Search kanji and kana fields
+    // Ranked: exact match > starts-with > contains
+    const exactJp: DictWord[] = [];
+    const startsWithJp: DictWord[] = [];
+    const containsJp: DictWord[] = [];
+
     for (const word of dict.words) {
-      const matchKanji = word.kanji.some((k) => k.text.includes(q));
-      const matchKana = word.kana.some((k) =>
-        k.text.includes(q) || toRomaji(k.text).toLowerCase().includes(q)
-      );
-      if (matchKanji || matchKana) {
-        results.push(word);
-        if (results.length >= limit) break;
+      const kanjiTexts = word.kanji.map((k) => k.text);
+      const kanaTexts = word.kana.map((k) => k.text);
+      const all = [...kanjiTexts, ...kanaTexts];
+
+      if (all.some((t) => t === q)) {
+        exactJp.push(word);
+      } else if (all.some((t) => t.startsWith(q))) {
+        startsWithJp.push(word);
+      } else if (all.some((t) => t.includes(q))) {
+        containsJp.push(word);
       }
     }
+
+    results.push(...exactJp, ...startsWithJp, ...containsJp);
   } else {
     // Search English glosses + romaji (for transliterated input like "kutsu", "sushi")
     // Ranked: exact English > exact romaji > word-boundary English > partial romaji > substring English
