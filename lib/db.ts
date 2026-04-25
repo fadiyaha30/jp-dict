@@ -8,7 +8,7 @@ import type { HistoryItem } from "./history";
 const DATA_DIR = path.join(process.cwd(), "data");
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
-const db = new Database(path.join(DATA_DIR, "jdict.db"));
+const db = new Database(path.join(DATA_DIR, "faya_dict.db"));
 db.pragma("journal_mode = WAL");
 
 db.exec(`

@@ -3,15 +3,6 @@ import path from "path";
 import type { DictData, DictWord, SearchResult } from "./types";
 import { toRomaji } from "./romaji";
 
-// JLPT level tags used in jmdict-simplified
-const JLPT_TAGS: Record<string, string> = {
-  "jlpt-n1": "N1",
-  "jlpt-n2": "N2",
-  "jlpt-n3": "N3",
-  "jlpt-n4": "N4",
-  "jlpt-n5": "N5",
-};
-
 // Part-of-speech shorthand labels
 const POS_LABELS: Record<string, string> = {
   "n": "Noun",
@@ -44,6 +35,7 @@ const POS_LABELS: Record<string, string> = {
 };
 
 let _cache: DictData | null = null;
+let _jlptMap: Record<string, string> | null = null;
 
 function loadDict(): DictData {
   if (_cache) return _cache;
@@ -53,23 +45,27 @@ function loadDict(): DictData {
   return _cache;
 }
 
+function loadJlptMap(): Record<string, string> {
+  if (_jlptMap) return _jlptMap;
+  try {
+    const filePath = path.join(process.cwd(), "data", "jlpt-map.json");
+    _jlptMap = JSON.parse(readFileSync(filePath, "utf-8"));
+  } catch {
+    _jlptMap = {};
+  }
+  return _jlptMap!;
+}
+
 export function isJapanese(text: string): boolean {
   return /[　-鿿豈-﫿＀-￯]/.test(text);
 }
 
 function getJlpt(word: DictWord): string | null {
-  for (const sense of word.sense) {
-    for (const tag of sense.tags) {
-      if (JLPT_TAGS[tag]) return JLPT_TAGS[tag];
-    }
-  }
-  // Also check kana/kanji tags in some jmdict versions
-  for (const k of word.kana) {
-    for (const tag of k.tags) {
-      if (JLPT_TAGS[tag]) return JLPT_TAGS[tag];
-    }
-  }
-  return null;
+  // jmdict-simplified v3.6+ has no JLPT data; use the separately-built jlpt-map.json
+  const map = loadJlptMap();
+  const kanji = word.kanji[0]?.text;
+  const kana = word.kana[0]?.text;
+  return (kanji && map[kanji]) || (kana && map[kana]) || null;
 }
 
 function getPOS(word: DictWord): string[] {
@@ -171,6 +167,20 @@ export function search(
   }
 
   return results.slice(0, limit).map(wordToResult);
+}
+
+export function getRandomWord(): SearchResult | null {
+  const dict = loadDict();
+  const map = loadJlptMap();
+  // Prefer JLPT-tagged words (more useful/common vocabulary)
+  const jlptWords = dict.words.filter((w) => {
+    const kanji = w.kanji[0]?.text;
+    const kana = w.kana[0]?.text;
+    return (kanji && map[kanji]) || (kana && map[kana]);
+  });
+  const pool = jlptWords.length > 0 ? jlptWords : dict.words;
+  const word = pool[Math.floor(Math.random() * pool.length)];
+  return word ? wordToResult(word) : null;
 }
 
 export function getWordById(id: string): DictWord | null {

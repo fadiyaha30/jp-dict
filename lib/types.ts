@@ -25,6 +25,7 @@ export interface Sense {
 
 export interface DictWord {
   id: string;
+  jlpt?: string | null;
   kanji: KanjiEntry[];
   kana: KanaEntry[];
   sense: Sense[];

@@ -14,7 +14,7 @@ export type HistoryItem =
       timestamp: number;
     };
 
-const KEY = "jdict_history";
+const KEY = "faya_dict_history";
 const MAX = 50;
 
 export function getHistory(): HistoryItem[] {

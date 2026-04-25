@@ -9,7 +9,7 @@ export interface FavoriteItem {
   savedAt: number;
 }
 
-const KEY = "jdict_favorites";
+const KEY = "faya_dict_favorites";
 
 export function getFavorites(): FavoriteItem[] {
   try {

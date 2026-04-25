@@ -17,9 +17,13 @@
 
 # dictionary data (large files, generated)
 /data/jmdict.json
+/data/jlpt-map.json
 /data/jdict.db
 /data/jdict.db-shm
 /data/jdict.db-wal
+/data/faya_dict.db
+/data/faya_dict.db-shm
+/data/faya_dict.db-wal
 
 # debug
 npm-debug.log*

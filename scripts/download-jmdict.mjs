@@ -22,7 +22,7 @@ if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
 console.log("Fetching latest release info from GitHub...");
 const apiRes = await fetch(
   "https://api.github.com/repos/scriptin/jmdict-simplified/releases/latest",
-  { headers: { "User-Agent": "jdict-setup-script/1.0" } }
+  { headers: { "User-Agent": "faya-dict-setup-script/1.0" } }
 );
 if (!apiRes.ok) throw new Error(`GitHub API error: ${apiRes.status}`);
 const release = await apiRes.json();
@@ -59,6 +59,7 @@ const trimmed = {
   dictDate: raw.dictDate,
   words: raw.words.map((w) => ({
     id: w.id,
+    jlpt: w.jlpt ?? null,
     kanji: (w.kanji ?? []).map((k) => ({ text: k.text, tags: k.tags })),
     kana: (w.kana ?? []).map((k) => ({
       text: k.text,

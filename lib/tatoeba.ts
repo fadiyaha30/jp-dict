@@ -12,7 +12,7 @@ export async function fetchExamples(
     const url = `https://tatoeba.org/en/api_v0/search?from=jpn&to=eng&query=${encodeURIComponent(word)}&orphans=no&unapproved=no&limit=${limit}`;
     const res = await fetch(url, {
       next: { revalidate: 86400 }, // cache per word for 24h
-      headers: { "User-Agent": "jdict-app/1.0" },
+      headers: { "User-Agent": "faya-dict-app/1.0" },
     });
     if (!res.ok) return [];
     const data = await res.json();
