@@ -19,6 +19,9 @@ export default function HistoryPage() {
   const { data: session, status } = useSession();
   const isLoggedIn = !!session?.user;
   const [items, setItems] = useState<HistoryItem[]>([]);
+  const [filter, setFilter] = useState<"all" | "word" | "search">("all");
+
+  const filtered = filter === "all" ? items : items.filter((i) => i.type === filter);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -64,6 +67,30 @@ export default function HistoryPage() {
           )}
         </div>
 
+        {items.length > 0 && (
+          <div className="flex">
+            <div
+              className="flex rounded-lg overflow-hidden gap-px"
+              style={{ background: "var(--border)", border: "1px solid var(--border)" }}
+            >
+              {(["all", "word", "search"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className="px-4 py-1.5 text-xs font-medium transition-all"
+                  style={
+                    filter === f
+                      ? { background: "var(--surface)", color: "var(--accent)", fontWeight: 600 }
+                      : { background: "var(--subtle)", color: "var(--muted)" }
+                  }
+                >
+                  {f === "all" ? "All" : f === "word" ? "Words" : "Searches"}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-20">
             <p className="text-4xl">📖</p>
@@ -73,9 +100,15 @@ export default function HistoryPage() {
               Start searching
             </Link>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16">
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              No {filter === "word" ? "word views" : "searches"} in history.
+            </p>
+          </div>
         ) : (
           <div className="flex flex-col gap-1.5">
-            {items.map((item) => (
+            {filtered.map((item) => (
               <div
                 key={item.timestamp}
                 className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all hover:border-[var(--accent-mid)]"
