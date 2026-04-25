@@ -18,6 +18,8 @@
 # dictionary data (large files, generated)
 /data/jmdict.json
 /data/jdict.db
+/data/jdict.db-shm
+/data/jdict.db-wal
 
 # debug
 npm-debug.log*
