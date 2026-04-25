@@ -1,6 +1,7 @@
 import SearchBar from "@/components/SearchBar";
 import WordCard from "@/components/WordCard";
-import { search } from "@/lib/dictionary";
+import { search, isJapanese } from "@/lib/dictionary";
+import { deinflect } from "@/lib/deinflect";
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string; mode?: string }>;
@@ -13,10 +14,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   let results: any[] = [];
   let error: string | null = null;
+  let deinflectedTo: string | null = null;
 
   if (query) {
     try {
       results = search(query, searchMode, 24);
+      if (results.length === 0 && isJapanese(query)) {
+        const candidates = deinflect(query);
+        for (const candidate of candidates) {
+          const r = search(candidate, "jp", 24);
+          if (r.length > 0) {
+            results = r;
+            deinflectedTo = candidate;
+            break;
+          }
+        }
+      }
     } catch {
       error = "Dictionary data not found. Run `npm run setup-data` to download it.";
     }
@@ -46,8 +59,18 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           </div>
         ) : query ? (
           <>
+            {deinflectedTo && (
+              <div
+                className="rounded-xl px-4 py-3 text-sm flex items-center gap-2"
+                style={{ background: "var(--accent-pale)", border: "1px solid #c7d2fe", color: "var(--accent)" }}
+              >
+                <span>Showing results for</span>
+                <span className="font-semibold jp-text">{deinflectedTo}</span>
+                <span style={{ color: "var(--muted)" }}>(deinflected from &ldquo;{query}&rdquo;)</span>
+              </div>
+            )}
             <p className="text-sm" style={{ color: "var(--muted)" }}>
-              {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
+              {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{deinflectedTo ?? query}&rdquo;
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {results.map((result) => (
