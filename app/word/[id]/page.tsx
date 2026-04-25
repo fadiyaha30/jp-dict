@@ -7,6 +7,7 @@ import { getWordDetail } from "@/lib/dictionary";
 import { fetchExamples } from "@/lib/tatoeba";
 import { toFurigana } from "@/lib/furigana";
 import { conjugate } from "@/lib/conjugation";
+import { extractKanji, fetchKanjiSvg } from "@/lib/kanjivg";
 
 interface WordPageProps {
   params: Promise<{ id: string }>;
@@ -47,6 +48,14 @@ export default async function WordPage({ params }: WordPageProps) {
 
   const rawPos = [...new Set(word.sense.flatMap((s) => s.partOfSpeech))];
   const conjugation = conjugate(result.reading, rawPos);
+
+  const kanjiChars = extractKanji(result.kanji);
+  const kanjiSvgEntries = await Promise.all(
+    kanjiChars.map(async (char) => ({ char, svg: await fetchKanjiSvg(char) }))
+  );
+  const kanjiSvgs = kanjiSvgEntries.filter(
+    (e): e is { char: string; svg: string } => e.svg !== null
+  );
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-6 w-full">
@@ -177,6 +186,7 @@ export default async function WordPage({ params }: WordPageProps) {
         searchWord={searchWord}
         result={result}
         conjugation={conjugation}
+        kanjiSvgs={kanjiSvgs}
       />
     </main>
   );

@@ -5,6 +5,7 @@ import WordDefinitions from "@/components/WordDefinitions";
 import ExampleSentences from "@/components/ExampleSentences";
 import UserNotes from "@/components/UserNotes";
 import Conjugation from "@/components/Conjugation";
+import KanjiStrokes from "@/components/KanjiStrokes";
 import type { ConjugationTable } from "@/lib/conjugation";
 
 interface WordPageTabsProps {
@@ -13,14 +14,16 @@ interface WordPageTabsProps {
   searchWord: string;
   result: any;
   conjugation: ConjugationTable | null;
+  kanjiSvgs: { char: string; svg: string }[];
 }
 
-export default function WordPageTabs({ word, examples, searchWord, result, conjugation }: WordPageTabsProps) {
+export default function WordPageTabs({ word, examples, searchWord, result, conjugation, kanjiSvgs }: WordPageTabsProps) {
   const [activeTab, setActiveTab] = useState("definitions");
 
   const tabs = [
     { key: "definitions", label: "Definitions" },
     ...(conjugation ? [{ key: "conjugation", label: "Conjugation" }] : []),
+    ...(kanjiSvgs.length > 0 ? [{ key: "strokes", label: "Stroke Order" }] : []),
     { key: "examples", label: `Examples${examples.length > 0 ? ` (${examples.length})` : ""}` },
     { key: "notes", label: "My Notes" },
   ];
@@ -56,6 +59,7 @@ export default function WordPageTabs({ word, examples, searchWord, result, conju
 
       {activeTab === "definitions" && <WordDefinitions word={word} />}
       {activeTab === "conjugation" && conjugation && <Conjugation table={conjugation} />}
+      {activeTab === "strokes" && <KanjiStrokes chars={kanjiSvgs} />}
       {activeTab === "examples" && <ExampleSentences examples={examples} word={searchWord} />}
       {activeTab === "notes" && <UserNotes wordId={result.id} />}
     </div>
