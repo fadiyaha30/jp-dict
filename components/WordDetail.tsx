@@ -1,5 +1,6 @@
 import { Badge, Group, Paper, Stack, Text, Divider } from "@mantine/core";
 import type { DictWord, SearchResult } from "@/lib/types";
+import FavoriteButton from "./FavoriteButton";
 
 const JLPT_COLORS: Record<string, string> = {
   N1: "red",
@@ -42,11 +43,7 @@ export default function WordDetail({ word, result }: WordDetailProps) {
 
         <Group gap="xs" justify="center" mt="xs">
           {result.jlpt && (
-            <Badge
-              color={JLPT_COLORS[result.jlpt] ?? "gray"}
-              variant="filled"
-              size="md"
-            >
+            <Badge color={JLPT_COLORS[result.jlpt] ?? "gray"} variant="filled" size="md">
               JLPT {result.jlpt}
             </Badge>
           )}
@@ -55,6 +52,18 @@ export default function WordDetail({ word, result }: WordDetailProps) {
               {pos}
             </Badge>
           ))}
+          <FavoriteButton
+            size="lg"
+            item={{
+              id: result.id,
+              kanji: result.kanji,
+              reading: result.reading,
+              romaji: result.romaji,
+              meaning: result.meanings[0] ?? "",
+              partOfSpeech: result.partOfSpeech,
+              jlpt: result.jlpt,
+            }}
+          />
         </Group>
       </Stack>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Card, Badge, Group, Stack, Text, Anchor } from "@mantine/core";
+import { Card, Badge, Group, Stack, Text } from "@mantine/core";
 import type { SearchResult } from "@/lib/types";
+import FavoriteButton from "./FavoriteButton";
 
 const JLPT_COLORS: Record<string, string> = {
   N1: "red",
@@ -42,15 +43,25 @@ export default function WordCard({ result }: WordCardProps) {
               </Text>
             )}
           </div>
-          {result.jlpt && (
-            <Badge
-              color={JLPT_COLORS[result.jlpt] ?? "gray"}
-              variant="light"
+          <Group gap="xs">
+            {result.jlpt && (
+              <Badge color={JLPT_COLORS[result.jlpt] ?? "gray"} variant="light" size="sm">
+                JLPT {result.jlpt}
+              </Badge>
+            )}
+            <FavoriteButton
               size="sm"
-            >
-              JLPT {result.jlpt}
-            </Badge>
-          )}
+              item={{
+                id: result.id,
+                kanji: result.kanji,
+                reading: result.reading,
+                romaji: result.romaji,
+                meaning: result.meanings[0] ?? "",
+                partOfSpeech: result.partOfSpeech,
+                jlpt: result.jlpt,
+              }}
+            />
+          </Group>
         </Group>
 
         {/* Romaji */}

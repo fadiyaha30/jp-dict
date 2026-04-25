@@ -29,6 +29,11 @@ export default function NavbarClient({ username }: NavbarClientProps) {
           </Link>
 
           <Group gap="lg" align="center">
+            <Link href="/favorites" style={{ textDecoration: "none" }}>
+              <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
+                Favorites
+              </Text>
+            </Link>
             <Link href="/history" style={{ textDecoration: "none" }}>
               <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
                 History
