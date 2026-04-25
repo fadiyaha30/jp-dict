@@ -1,5 +1,4 @@
 import { SimpleGrid, Stack, Text, Alert } from "@mantine/core";
-import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import WordCard from "@/components/WordCard";
 import { search } from "@/lib/dictionary";
@@ -27,7 +26,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      
       <main className="max-w-4xl mx-auto px-4 py-8">
         <Stack gap="xl">
           {/* Search bar */}

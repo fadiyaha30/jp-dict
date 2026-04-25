@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { Anchor, Breadcrumbs, Stack } from "@mantine/core";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import WordDetail from "@/components/WordDetail";
 import WordHistoryTracker from "@/components/WordHistoryTracker";
 import { getWordDetail } from "@/lib/dictionary";
@@ -30,7 +29,7 @@ export default async function WordPage({ params }: WordPageProps) {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      
       <main className="max-w-2xl mx-auto px-4 py-8">
         <Stack gap="xl">
           <Breadcrumbs>

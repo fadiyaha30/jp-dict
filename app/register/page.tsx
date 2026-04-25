@@ -16,7 +16,6 @@ import {
   Divider,
   List,
 } from "@mantine/core";
-import Navbar from "@/components/Navbar";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -62,7 +61,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      
       <main className="flex items-center justify-center px-4 py-16">
         <Paper withBorder shadow="sm" p="xl" radius="md" w="100%" maw={420}>
           <Stack gap="lg">

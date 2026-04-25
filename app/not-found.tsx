@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { Stack, Text, Button } from "@mantine/core";
-import Navbar from "@/components/Navbar";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen">
-      <Navbar />
+      
       <main className="max-w-2xl mx-auto px-4 py-16">
         <Stack align="center" gap="lg">
           <Text size="4rem" className="jp-text" style={{ color: "#1D9E75" }}>

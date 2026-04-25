@@ -4,6 +4,7 @@ import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "./globals.css";
 import { theme } from "@/lib/theme";
+import Navbar from "@/components/Navbar";
 
 const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -29,6 +30,7 @@ export default function RootLayout({
       </head>
       <body>
         <MantineProvider theme={theme} forceColorScheme="light">
+          <Navbar />
           {children}
         </MantineProvider>
       </body>

@@ -13,7 +13,6 @@ import {
   Paper,
   Anchor,
 } from "@mantine/core";
-import Navbar from "@/components/Navbar";
 import {
   getHistory,
   clearHistory,
@@ -50,7 +49,7 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      
       <main className="max-w-2xl mx-auto px-4 py-8">
         <Stack gap="xl">
           <Group justify="space-between" align="center">

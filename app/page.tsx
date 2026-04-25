@@ -1,11 +1,10 @@
 import { Stack, Text } from "@mantine/core";
 import SearchBar from "@/components/SearchBar";
-import Navbar from "@/components/Navbar";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <Stack gap="xl" align="center" w="100%" maw={600}>
           {/* Logo / hero */}

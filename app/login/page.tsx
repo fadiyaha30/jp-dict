@@ -15,7 +15,6 @@ import {
   Anchor,
   Divider,
 } from "@mantine/core";
-import Navbar from "@/components/Navbar";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -46,7 +45,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      
       <main className="flex items-center justify-center px-4 py-16">
         <Paper withBorder shadow="sm" p="xl" radius="md" w="100%" maw={420}>
           <Stack gap="lg">
