@@ -23,8 +23,10 @@ export async function fetchKanjiSvg(char: string): Promise<string | null> {
     });
     if (!res.ok) return null;
     const raw = await res.text();
+    // Strip XML declaration + DTD (everything before <svg) to avoid ]> artifact in HTML
+    const svgOnly = raw.slice(raw.indexOf("<svg"));
     // Restyle: use accent color for strokes, keep gray for numbers
-    return raw
+    return svgOnly
       .replace(/stroke:#000000/g, "stroke:#4f46e5")
       .replace(/stroke-width:3/g, "stroke-width:3.5")
       .replace(/fill:#808080/g, "fill:#9ca3af")
