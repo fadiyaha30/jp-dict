@@ -131,24 +131,34 @@ export function search(
       }
     }
   } else {
-    // Search English glosses — ranked: exact match > word-start > substring
-    const exact: DictWord[] = [];
-    const wordStart: DictWord[] = [];
-    const substring: DictWord[] = [];
+    // Search English glosses + romaji (for transliterated input like "kutsu", "sushi")
+    // Ranked: exact English > exact romaji > word-boundary English > partial romaji > substring English
+    const exactEn: DictWord[] = [];
+    const exactRomaji: DictWord[] = [];
+    const wordBoundaryEn: DictWord[] = [];
+    const partialRomaji: DictWord[] = [];
+    const substringEn: DictWord[] = [];
     const wordBoundary = new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    // Only attempt romaji matching for pure-letter queries (rules out numbers, spaces, etc.)
+    const tryRomaji = mode !== "en" && /^[a-z]+$/.test(q);
 
     for (const word of dict.words) {
       const glosses = word.sense.flatMap((s) => s.gloss.map((g) => g.toLowerCase()));
+
       if (glosses.some((g) => g === q)) {
-        exact.push(word);
+        exactEn.push(word);
+      } else if (tryRomaji && word.kana.some((k) => toRomaji(k.text).toLowerCase() === q)) {
+        exactRomaji.push(word);
       } else if (glosses.some((g) => wordBoundary.test(g))) {
-        wordStart.push(word);
+        wordBoundaryEn.push(word);
+      } else if (tryRomaji && word.kana.some((k) => toRomaji(k.text).toLowerCase().includes(q))) {
+        partialRomaji.push(word);
       } else if (glosses.some((g) => g.includes(q))) {
-        substring.push(word);
+        substringEn.push(word);
       }
     }
 
-    results.push(...exact, ...wordStart, ...substring);
+    results.push(...exactEn, ...exactRomaji, ...wordBoundaryEn, ...partialRomaji, ...substringEn);
   }
 
   return results.slice(0, limit).map(wordToResult);
