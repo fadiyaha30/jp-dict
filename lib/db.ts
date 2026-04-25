@@ -40,6 +40,24 @@ db.exec(`
     data      TEXT    NOT NULL,
     timestamp INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS user_notes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id    TEXT    NOT NULL,
+    note       TEXT    NOT NULL DEFAULT '',
+    updated_at INTEGER NOT NULL,
+    UNIQUE(user_id, word_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS user_examples (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id     TEXT    NOT NULL,
+    text        TEXT    NOT NULL,
+    translation TEXT    NOT NULL DEFAULT '',
+    created_at  INTEGER NOT NULL
+  );
 `);
 
 // ── Users ─────────────────────────────────────────────────────────────────────
@@ -158,4 +176,55 @@ export function removeHistoryItemFromDb(userId: number, timestamp: number) {
 
 export function clearHistoryFromDb(userId: number) {
   db.prepare("DELETE FROM history WHERE user_id = ?").run(userId);
+}
+
+// ── User Notes & Examples ─────────────────────────────────────────────────────
+
+export interface DbUserNote {
+  note: string;
+  updated_at: number;
+}
+
+export interface DbUserExample {
+  id: number;
+  text: string;
+  translation: string;
+  created_at: number;
+}
+
+export function getUserNote(userId: number, wordId: string): DbUserNote | null {
+  const row = db
+    .prepare("SELECT note, updated_at FROM user_notes WHERE user_id = ? AND word_id = ?")
+    .get(userId, wordId) as DbUserNote | undefined;
+  return row ?? null;
+}
+
+export function saveUserNote(userId: number, wordId: string, note: string) {
+  db.prepare(`
+    INSERT INTO user_notes (user_id, word_id, note, updated_at)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(user_id, word_id) DO UPDATE SET note = excluded.note, updated_at = excluded.updated_at
+  `).run(userId, wordId, note, Date.now());
+}
+
+export function getUserExamples(userId: number, wordId: string): DbUserExample[] {
+  return db
+    .prepare("SELECT id, text, translation, created_at FROM user_examples WHERE user_id = ? AND word_id = ? ORDER BY created_at ASC")
+    .all(userId, wordId) as DbUserExample[];
+}
+
+export function addUserExample(
+  userId: number,
+  wordId: string,
+  text: string,
+  translation: string
+): number {
+  const result = db
+    .prepare("INSERT INTO user_examples (user_id, word_id, text, translation, created_at) VALUES (?, ?, ?, ?, ?)")
+    .run(userId, wordId, text, translation, Date.now());
+  return result.lastInsertRowid as number;
+}
+
+export function deleteUserExample(userId: number, exampleId: number) {
+  db.prepare("DELETE FROM user_examples WHERE id = ? AND user_id = ?").run(exampleId, userId);
 }

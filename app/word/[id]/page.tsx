@@ -4,6 +4,7 @@ import Link from "next/link";
 import WordDetail from "@/components/WordDetail";
 import WordHistoryTracker from "@/components/WordHistoryTracker";
 import ExampleSentences from "@/components/ExampleSentences";
+import UserNotes from "@/components/UserNotes";
 import { getWordDetail } from "@/lib/dictionary";
 import { fetchExamples } from "@/lib/tatoeba";
 import { toFurigana } from "@/lib/furigana";
@@ -58,6 +59,8 @@ export default async function WordPage({ params }: WordPageProps) {
         <WordDetail word={word} result={result} />
 
         <ExampleSentences examples={examples} word={searchWord} />
+
+        <UserNotes wordId={result.id} />
       </Stack>
     </main>
   );
