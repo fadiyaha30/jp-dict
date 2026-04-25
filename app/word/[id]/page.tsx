@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { Anchor, Breadcrumbs, Stack } from "@mantine/core";
 import Link from "next/link";
-import WordDetail from "@/components/WordDetail";
+import { Badge, Tabs } from "@mantine/core";
+import WordDefinitions from "@/components/WordDefinitions";
 import WordHistoryTracker from "@/components/WordHistoryTracker";
 import ExampleSentences from "@/components/ExampleSentences";
 import UserNotes from "@/components/UserNotes";
+import FavoriteButton from "@/components/FavoriteButton";
 import { getWordDetail } from "@/lib/dictionary";
 import { fetchExamples } from "@/lib/tatoeba";
 import { toFurigana } from "@/lib/furigana";
@@ -23,6 +24,10 @@ export async function generateMetadata({ params }: WordPageProps) {
   };
 }
 
+const JLPT_COLORS: Record<string, string> = {
+  N1: "#ef4444", N2: "#f97316", N3: "#eab308", N4: "#14b8a6", N5: "#1D9E75",
+};
+
 export default async function WordPage({ params }: WordPageProps) {
   const { id } = await params;
   const detail = getWordDetail(id);
@@ -30,7 +35,6 @@ export default async function WordPage({ params }: WordPageProps) {
 
   const { word, result } = detail;
 
-  // Fetch examples using kanji form if available, else kana
   const searchWord = result.kanji !== result.reading ? result.kanji : result.reading;
   const rawExamples = await fetchExamples(searchWord, 5);
   const examples = await Promise.all(
@@ -40,28 +44,142 @@ export default async function WordPage({ params }: WordPageProps) {
     }))
   );
 
+  const altKanji = word.kanji.slice(1).map((k) => k.text);
+  const altKana = word.kana.slice(1).map((k) => k.text);
+
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
-      <Stack gap="xl">
-        <Breadcrumbs>
-          <Anchor component={Link} href="/" size="sm">Home</Anchor>
-          <Anchor component={Link} href="/search" size="sm">Search</Anchor>
-          <span className="jp-text" style={{ fontSize: "0.875rem" }}>{result.kanji}</span>
-        </Breadcrumbs>
+    <main className="max-w-2xl mx-auto px-4 py-6">
+      <WordHistoryTracker
+        id={result.id}
+        kanji={result.kanji}
+        reading={result.reading}
+        meaning={result.meanings[0] ?? ""}
+      />
 
-        <WordHistoryTracker
-          id={result.id}
-          kanji={result.kanji}
-          reading={result.reading}
-          meaning={result.meanings[0] ?? ""}
-        />
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <div
+        className="rounded-2xl overflow-hidden relative mb-6"
+        style={{ background: "linear-gradient(135deg, #052e1c 0%, #1D9E75 100%)" }}
+      >
+        {/* decorative blobs */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5" />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5" />
 
-        <WordDetail word={word} result={result} />
+        <div className="relative px-6 pt-5 pb-7">
+          {/* top bar */}
+          <div className="flex justify-between items-center mb-6">
+            <Link
+              href="/search"
+              className="flex items-center gap-1.5 text-white/60 hover:text-white text-sm transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+              </svg>
+              Search
+            </Link>
+            <FavoriteButton
+              size="md"
+              item={{
+                id: result.id,
+                kanji: result.kanji,
+                reading: result.reading,
+                romaji: result.romaji,
+                meaning: result.meanings[0] ?? "",
+                partOfSpeech: result.partOfSpeech,
+                jlpt: result.jlpt,
+              }}
+            />
+          </div>
 
-        <ExampleSentences examples={examples} word={searchWord} />
+          {/* main word */}
+          <div className="text-center">
+            <div
+              className="jp-text font-bold text-white leading-none mb-3"
+              style={{ fontSize: "clamp(4rem, 15vw, 7rem)", textShadow: "0 4px 24px rgba(0,0,0,0.25)" }}
+            >
+              {result.kanji}
+            </div>
 
-        <UserNotes wordId={result.id} />
-      </Stack>
+            {/* reading + romaji */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              {result.reading && result.reading !== result.kanji && (
+                <span className="jp-text text-lg text-white/85">{result.reading}</span>
+              )}
+              {result.romaji && (
+                <>
+                  <span className="text-white/30">·</span>
+                  <span className="text-base italic text-white/60">{result.romaji}</span>
+                </>
+              )}
+            </div>
+
+            {/* badges */}
+            <div className="flex gap-2 justify-center flex-wrap">
+              {result.jlpt && (
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-bold text-white"
+                  style={{ background: JLPT_COLORS[result.jlpt] + "55", border: `1px solid ${JLPT_COLORS[result.jlpt]}88` }}
+                >
+                  JLPT {result.jlpt}
+                </span>
+              )}
+              {result.partOfSpeech.slice(0, 3).map((pos) => (
+                <span key={pos} className="px-3 py-1 rounded-full text-xs text-white/75 bg-white/10 border border-white/10">
+                  {pos}
+                </span>
+              ))}
+            </div>
+
+            {/* alt forms */}
+            {(altKanji.length > 0 || altKana.length > 0) && (
+              <div className="flex gap-2 justify-center flex-wrap mt-3">
+                {altKanji.map((k) => (
+                  <span key={k} className="jp-text text-xs text-white/50 px-2 py-0.5 rounded bg-white/5">
+                    {k}
+                  </span>
+                ))}
+                {altKana.map((k) => (
+                  <span key={k} className="jp-text text-xs text-white/50 px-2 py-0.5 rounded bg-white/5">
+                    {k}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tabs ─────────────────────────────────────────────── */}
+      <Tabs defaultValue="definitions" color="green">
+        <Tabs.List mb="lg">
+          <Tabs.Tab value="definitions" fw={500}>
+            Definitions
+          </Tabs.Tab>
+          <Tabs.Tab value="examples" fw={500}>
+            Examples
+            {examples.length > 0 && (
+              <Badge size="xs" color="green" variant="light" ml={6}>
+                {examples.length}
+              </Badge>
+            )}
+          </Tabs.Tab>
+          <Tabs.Tab value="notes" fw={500}>
+            My Notes
+          </Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="definitions">
+          <WordDefinitions word={word} />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="examples">
+          <ExampleSentences examples={examples} word={searchWord} />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="notes">
+          <UserNotes wordId={result.id} />
+        </Tabs.Panel>
+      </Tabs>
     </main>
   );
 }
