@@ -1,7 +1,11 @@
 import Link from "next/link";
-import { Group, Text } from "@mantine/core";
+import { Group, Text, Badge } from "@mantine/core";
+import { auth } from "@/auth";
+import LogoutButton from "./LogoutButton";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const session = await auth();
+
   return (
     <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
       <div className="max-w-4xl mx-auto px-4 py-3">
@@ -20,15 +24,35 @@ export default function Navbar() {
               </Text>
             </Group>
           </Link>
-          <Group gap="lg">
+
+          <Group gap="lg" align="center">
             <Link href="/history" style={{ textDecoration: "none" }}>
               <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
                 History
               </Text>
             </Link>
-            <Text size="xs" c="dimmed">
-              EN–JP Dictionary
-            </Text>
+
+            {session?.user ? (
+              <Group gap="sm" align="center">
+                <Badge color="green" variant="light" size="sm">
+                  {session.user.name}
+                </Badge>
+                <LogoutButton />
+              </Group>
+            ) : (
+              <Group gap="sm">
+                <Link href="/login" style={{ textDecoration: "none" }}>
+                  <Text size="sm" c="dimmed" className="hover:text-[#1D9E75] transition-colors">
+                    Sign in
+                  </Text>
+                </Link>
+                <Link href="/register" style={{ textDecoration: "none" }}>
+                  <Text size="sm" fw={500} style={{ color: "#1D9E75" }}>
+                    Register
+                  </Text>
+                </Link>
+              </Group>
+            )}
           </Group>
         </Group>
       </div>
