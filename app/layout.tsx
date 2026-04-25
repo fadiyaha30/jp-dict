@@ -14,7 +14,7 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "JDict — English-Japanese Dictionary",
+  title: "ファヤの辞書 — English-Japanese Dictionary",
   description: "Search English and Japanese words with readings, romaji, and JLPT levels",
 };
 

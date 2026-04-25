@@ -45,7 +45,7 @@ export default function RegisterPage() {
         <div className="flex flex-col items-center gap-1 mb-8 text-center">
           <span className="jp-text text-3xl font-black" style={{ color: "var(--accent)" }}>辞</span>
           <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>Create an account</h1>
-          <p className="text-sm" style={{ color: "var(--muted)" }}>Join JDict to sync your progress</p>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>Join ファヤの辞書 to sync your progress</p>
         </div>
 
         <div

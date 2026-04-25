@@ -31,7 +31,7 @@ export default function HomePage() {
             className="text-xs font-semibold uppercase tracking-[0.25em]"
             style={{ color: "var(--accent)" }}
           >
-            JDict
+            ファヤの辞書
           </p>
           <h1 className="text-3xl font-bold leading-tight" style={{ color: "var(--text)" }}>
             English–Japanese<br />Dictionary

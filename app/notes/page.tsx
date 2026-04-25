@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { getPersonalNotes } from "@/lib/db";
 import PersonalNotesList from "@/components/PersonalNotesList";
 
-export const metadata = { title: "Personal Notes — JDict" };
+export const metadata = { title: "Personal Notes — ファヤの辞書" };
 
 export default async function NotesPage() {
   const session = await auth();

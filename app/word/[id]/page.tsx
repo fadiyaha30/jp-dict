@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: WordPageProps) {
   const detail = getWordDetail(id);
   if (!detail) return { title: "Word not found" };
   return {
-    title: `${detail.result.kanji} — JDict`,
+    title: `${detail.result.kanji} — ファヤの辞書`,
     description: detail.result.meanings.join(", "),
   };
 }

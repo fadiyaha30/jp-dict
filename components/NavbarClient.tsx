@@ -30,7 +30,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 no-underline">
           <span className="jp-text text-xl font-black" style={{ color: "var(--accent)" }}>辞</span>
-          <span className="font-bold text-base tracking-tight" style={{ color: "var(--text)" }}>JDict</span>
+          <span className="font-bold text-base tracking-tight" style={{ color: "var(--text)" }}>ファヤの辞書</span>
         </Link>
 
         <nav className="flex items-center gap-6">
