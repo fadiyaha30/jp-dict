@@ -15,8 +15,9 @@
 *.pem
 .env*.local
 
-# dictionary data (large file, generated)
+# dictionary data (large files, generated)
 /data/jmdict.json
+/data/jdict.db
 
 # debug
 npm-debug.log*
