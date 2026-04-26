@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGrammarById, getAllGrammar } from "@/lib/grammar";
+import { toFurigana } from "@/lib/furigana";
 import GrammarFavoriteButton from "@/components/GrammarFavoriteButton";
 import GrammarUserNotes from "@/components/GrammarUserNotes";
 
@@ -35,6 +36,13 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
 
   const color = JLPT_COLORS[g.jlpt];
   const backHref = from ?? "/grammar";
+
+  const examplesWithFurigana = await Promise.all(
+    g.examples.map(async (ex) => ({
+      ...ex,
+      furigana: await toFurigana(ex.japanese),
+    }))
+  );
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-6 w-full">
@@ -111,12 +119,14 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
           Examples
         </h2>
         <div className="flex flex-col gap-3">
-          {g.examples.map((ex, i) => (
+          {examplesWithFurigana.map((ex, i) => (
             <div key={i} className="rounded-xl p-4"
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-              <p className="jp-text text-base font-medium mb-1" style={{ color: "var(--text)" }}>
-                {ex.japanese}
-              </p>
+              <p
+                className="jp-text furigana-text font-medium mb-1"
+                style={{ color: "var(--text)" }}
+                dangerouslySetInnerHTML={{ __html: ex.furigana }}
+              />
               <p className="text-sm" style={{ color: "var(--muted)" }}>{ex.english}</p>
               {ex.note && <p className="text-xs mt-1.5 italic" style={{ color: "#b5afa8" }}>{ex.note}</p>}
             </div>
