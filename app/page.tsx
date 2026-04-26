@@ -46,7 +46,7 @@ export default function HomePage() {
             English–Japanese<br />Dictionary
           </h1>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Your personal Japanese dictionary — look up, practice, and take notes.
+            My personal Japanese dictionary — look up, practice, and take notes.
           </p>
         </div>
 
