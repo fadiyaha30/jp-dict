@@ -148,7 +148,7 @@ const COMBO_HEADERS = ["ya", "yu", "yo"];
 function MainTable({ rows, showRomaji }: { rows: KanaRow[]; showRomaji: boolean }) {
   return (
     <div className="overflow-x-auto">
-      <table className="border-separate" style={{ borderSpacing: 0 }}>
+      <table className="border-separate mx-auto" style={{ borderSpacing: 0 }}>
         <thead>
           <tr>
             <th className="w-8" />
@@ -177,7 +177,7 @@ function MainTable({ rows, showRomaji }: { rows: KanaRow[]; showRomaji: boolean 
 function ComboTable({ rows, showRomaji }: { rows: ComboRow[]; showRomaji: boolean }) {
   return (
     <div className="overflow-x-auto">
-      <table className="border-separate" style={{ borderSpacing: 0 }}>
+      <table className="border-separate mx-auto" style={{ borderSpacing: 0 }}>
         <thead>
           <tr>
             <th className="w-8" />
@@ -205,7 +205,7 @@ function ComboTable({ rows, showRomaji }: { rows: ComboRow[]; showRomaji: boolea
 
 function SectionHeading({ title }: { title: string }) {
   return (
-    <h2 className="text-xs font-semibold uppercase tracking-widest mb-3 mt-6" style={{ color: "var(--muted)" }}>
+    <h2 className="text-xs font-semibold uppercase tracking-widest mb-3 mt-6 text-center" style={{ color: "var(--muted)" }}>
       {title}
     </h2>
   );
