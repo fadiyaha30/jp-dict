@@ -9,14 +9,15 @@ export async function PUT(
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  const { phrase, meaning, context } = await req.json();
+  const { phrase, meaning, context, additional_notes } = await req.json();
   if (!phrase?.trim()) return NextResponse.json({ error: "Phrase is required" }, { status: 400 });
   updatePersonalNote(
     parseInt(session.user.id),
     parseInt(id),
     phrase.trim(),
     (meaning ?? "").trim(),
-    (context ?? "").trim()
+    (context ?? "").trim(),
+    (additional_notes ?? "").trim()
   );
   return NextResponse.json({ ok: true });
 }

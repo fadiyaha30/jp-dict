@@ -14,9 +14,10 @@ interface NoteForm {
   phrase: string;
   meaning: string;
   context: string;
+  additional_notes: string;
 }
 
-const emptyForm = (): NoteForm => ({ phrase: "", meaning: "", context: "" });
+const emptyForm = (): NoteForm => ({ phrase: "", meaning: "", context: "", additional_notes: "" });
 
 function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
@@ -79,10 +80,10 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
     setNotes([
       {
         id,
-        ...addForm,
         phrase: addForm.phrase.trim(),
         meaning: addForm.meaning.trim(),
         context: addForm.context.trim(),
+        additional_notes: addForm.additional_notes.trim(),
         word_id: null,
         word_kanji: null,
         grammar_id: null,
@@ -99,7 +100,7 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
 
   function startEdit(note: DbPersonalNote) {
     setEditId(note.id);
-    setEditForm({ phrase: note.phrase, meaning: note.meaning, context: note.context });
+    setEditForm({ phrase: note.phrase, meaning: note.meaning, context: note.context, additional_notes: note.additional_notes });
   }
 
   async function handleEdit() {
@@ -112,7 +113,7 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
     });
     setNotes(notes.map((n) =>
       n.id === editId
-        ? { ...n, phrase: editForm.phrase.trim(), meaning: editForm.meaning.trim(), context: editForm.context.trim(), updated_at: Date.now() }
+        ? { ...n, phrase: editForm.phrase.trim(), meaning: editForm.meaning.trim(), context: editForm.context.trim(), additional_notes: editForm.additional_notes.trim(), updated_at: Date.now() }
         : n
     ));
     setEditId(null);
@@ -246,6 +247,9 @@ function NoteCard({
       {note.context && (
         <p className="text-xs italic" style={{ color: "var(--muted)" }}>📍 {note.context}</p>
       )}
+      {note.additional_notes && (
+        <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{note.additional_notes}</p>
+      )}
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs" style={{ color: "var(--muted)" }}>
@@ -373,6 +377,21 @@ function NoteFormCard({
             onChange={(e) => onChange({ ...form, context: e.target.value })}
             placeholder="e.g. Overheard at the office, from anime, etc."
             className="rounded-xl px-4 py-2.5 text-sm outline-none"
+            style={{ background: "var(--subtle)", border: "1px solid var(--border)", color: "var(--text)" }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+            Additional Notes <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+          </label>
+          <textarea
+            rows={2}
+            value={form.additional_notes}
+            onChange={(e) => onChange({ ...form, additional_notes: e.target.value })}
+            placeholder="Extra notes, mnemonics, usage tips…"
+            className="rounded-xl px-4 py-2.5 text-sm resize-none outline-none"
             style={{ background: "var(--subtle)", border: "1px solid var(--border)", color: "var(--text)" }}
             onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
             onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}

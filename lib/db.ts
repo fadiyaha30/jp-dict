@@ -86,6 +86,7 @@ try { db.exec("ALTER TABLE personal_notes ADD COLUMN word_id TEXT") } catch {}
 try { db.exec("ALTER TABLE personal_notes ADD COLUMN word_kanji TEXT") } catch {}
 try { db.exec("ALTER TABLE personal_notes ADD COLUMN grammar_id TEXT") } catch {}
 try { db.exec("ALTER TABLE personal_notes ADD COLUMN grammar_pattern TEXT") } catch {}
+try { db.exec("ALTER TABLE personal_notes ADD COLUMN additional_notes TEXT NOT NULL DEFAULT ''") } catch {}
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -263,6 +264,7 @@ export interface DbPersonalNote {
   phrase: string;
   meaning: string;
   context: string;
+  additional_notes: string;
   word_id: string | null;
   word_kanji: string | null;
   grammar_id: string | null;
@@ -271,7 +273,7 @@ export interface DbPersonalNote {
   updated_at: number;
 }
 
-const NOTE_COLS = "id, phrase, meaning, context, word_id, word_kanji, grammar_id, grammar_pattern, created_at, updated_at";
+const NOTE_COLS = "id, phrase, meaning, context, additional_notes, word_id, word_kanji, grammar_id, grammar_pattern, created_at, updated_at";
 
 export function getPersonalNotes(userId: number): DbPersonalNote[] {
   return db
@@ -296,6 +298,7 @@ export function addPersonalNote(
   phrase: string,
   meaning: string,
   context: string,
+  additionalNotes: string,
   wordId?: string,
   wordKanji?: string,
   grammarId?: string,
@@ -303,8 +306,8 @@ export function addPersonalNote(
 ): number {
   const now = Date.now();
   const result = db
-    .prepare("INSERT INTO personal_notes (user_id, phrase, meaning, context, word_id, word_kanji, grammar_id, grammar_pattern, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    .run(userId, phrase, meaning, context, wordId ?? null, wordKanji ?? null, grammarId ?? null, grammarPattern ?? null, now, now);
+    .prepare("INSERT INTO personal_notes (user_id, phrase, meaning, context, additional_notes, word_id, word_kanji, grammar_id, grammar_pattern, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(userId, phrase, meaning, context, additionalNotes, wordId ?? null, wordKanji ?? null, grammarId ?? null, grammarPattern ?? null, now, now);
   return result.lastInsertRowid as number;
 }
 
@@ -313,11 +316,12 @@ export function updatePersonalNote(
   noteId: number,
   phrase: string,
   meaning: string,
-  context: string
+  context: string,
+  additionalNotes: string
 ) {
   db.prepare(
-    "UPDATE personal_notes SET phrase = ?, meaning = ?, context = ?, updated_at = ? WHERE id = ? AND user_id = ?"
-  ).run(phrase, meaning, context, Date.now(), noteId, userId);
+    "UPDATE personal_notes SET phrase = ?, meaning = ?, context = ?, additional_notes = ?, updated_at = ? WHERE id = ? AND user_id = ?"
+  ).run(phrase, meaning, context, additionalNotes, Date.now(), noteId, userId);
 }
 
 export function deletePersonalNote(userId: number, noteId: number) {

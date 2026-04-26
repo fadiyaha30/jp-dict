@@ -9,6 +9,7 @@ interface NoteForm {
   phrase: string;
   meaning: string;
   context: string;
+  additional_notes: string;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -35,11 +36,11 @@ export default function GrammarUserNotes({
 
   const [notes, setNotes] = useState<DbPersonalNote[]>([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState<NoteForm>({ phrase: "", meaning: "", context: "" });
+  const [form, setForm] = useState<NoteForm>({ phrase: "", meaning: "", context: "", additional_notes: "" });
   const [saving, setSaving] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState<NoteForm>({ phrase: "", meaning: "", context: "" });
+  const [editForm, setEditForm] = useState<NoteForm>({ phrase: "", meaning: "", context: "", additional_notes: "" });
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -65,6 +66,7 @@ export default function GrammarUserNotes({
         phrase: form.phrase.trim(),
         meaning: form.meaning.trim(),
         context: form.context.trim(),
+        additional_notes: form.additional_notes.trim(),
         word_id: null,
         word_kanji: null,
         grammar_id: grammarId,
@@ -74,7 +76,7 @@ export default function GrammarUserNotes({
       },
       ...prev,
     ]);
-    setForm({ phrase: "", meaning: "", context: "" });
+    setForm({ phrase: "", meaning: "", context: "", additional_notes: "" });
     setShowAdd(false);
     setSaving(false);
   }
@@ -91,7 +93,7 @@ export default function GrammarUserNotes({
     setNotes((prev) =>
       prev.map((n) =>
         n.id === editId
-          ? { ...n, ...editForm, phrase: editForm.phrase.trim(), meaning: editForm.meaning.trim(), context: editForm.context.trim(), updated_at: Date.now() }
+          ? { ...n, phrase: editForm.phrase.trim(), meaning: editForm.meaning.trim(), context: editForm.context.trim(), additional_notes: editForm.additional_notes.trim(), updated_at: Date.now() }
           : n
       )
     );
@@ -160,9 +162,26 @@ export default function GrammarUserNotes({
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span></label>
+                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+                  Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+                </label>
                 <input type="text" value={editForm.context}
                   onChange={(e) => setEditForm({ ...editForm, context: e.target.value })}
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+                  Additional Notes <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={editForm.additional_notes}
+                  onChange={(e) => setEditForm({ ...editForm, additional_notes: e.target.value })}
+                  placeholder="Extra notes, mnemonics, usage tips…"
+                  className="resize-none"
                   style={inputStyle}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
                   onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
@@ -188,9 +207,12 @@ export default function GrammarUserNotes({
             </p>
             {note.meaning && <p className="text-sm" style={{ color: "var(--text)" }}>{note.meaning}</p>}
             {note.context && <p className="text-xs italic" style={{ color: "var(--muted)" }}>📍 {note.context}</p>}
+            {note.additional_notes && (
+              <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{note.additional_notes}</p>
+            )}
             <div className="flex justify-end gap-2 mt-1">
               <button
-                onClick={() => { setEditId(note.id); setEditForm({ phrase: note.phrase, meaning: note.meaning, context: note.context }); setShowAdd(false); }}
+                onClick={() => { setEditId(note.id); setEditForm({ phrase: note.phrase, meaning: note.meaning, context: note.context, additional_notes: note.additional_notes }); setShowAdd(false); }}
                 className="text-xs px-2.5 py-1 rounded-lg transition-colors"
                 style={{ background: "var(--subtle)", color: "var(--muted)" }}>Edit</button>
               {confirmDeleteId === note.id ? (
@@ -252,9 +274,24 @@ export default function GrammarUserNotes({
                 onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
               />
             </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+                Additional Notes <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+              </label>
+              <textarea
+                rows={2}
+                value={form.additional_notes}
+                onChange={(e) => setForm({ ...form, additional_notes: e.target.value })}
+                placeholder="Extra notes, mnemonics, usage tips…"
+                className="resize-none"
+                style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+              />
+            </div>
           </div>
           <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => { setShowAdd(false); setForm({ phrase: "", meaning: "", context: "" }); }}
+            <button type="button" onClick={() => { setShowAdd(false); setForm({ phrase: "", meaning: "", context: "", additional_notes: "" }); }}
               className="px-4 py-2 rounded-xl text-sm"
               style={{ background: "var(--subtle)", color: "var(--muted)" }}>Cancel</button>
             <button type="submit" disabled={saving || !form.phrase.trim()}

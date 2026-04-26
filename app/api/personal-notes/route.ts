@@ -19,13 +19,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { phrase, meaning, context, word_id, word_kanji, grammar_id, grammar_pattern } = await req.json();
+  const { phrase, meaning, context, additional_notes, word_id, word_kanji, grammar_id, grammar_pattern } = await req.json();
   if (!phrase?.trim()) return NextResponse.json({ error: "Phrase is required" }, { status: 400 });
   const id = addPersonalNote(
     parseInt(session.user.id),
     phrase.trim(),
     (meaning ?? "").trim(),
     (context ?? "").trim(),
+    (additional_notes ?? "").trim(),
     word_id ?? undefined,
     word_kanji ?? undefined,
     grammar_id ?? undefined,
