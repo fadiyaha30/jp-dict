@@ -36,6 +36,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
         <nav className="flex items-center gap-6">
           {link("/grammar", "Grammar")}
           {link("/kana", "Kana")}
+          {link("/record", "Record")}
           {link("/favorites", "Favorites")}
           {link("/history", "History")}
           {link("/notes", "Notes")}
