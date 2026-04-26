@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { getHistory } from "@/lib/history";
@@ -48,6 +48,7 @@ export default function QuizClient() {
   const [correct, setCorrect] = useState(0);
 
   const [flipped, setFlipped] = useState(false);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [mcOptions, setMcOptions] = useState<QuizWord[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -115,13 +116,24 @@ export default function QuizClient() {
   function advance(wasCorrect: boolean) {
     const next = idx + 1;
     setCorrect((c) => (wasCorrect ? c + 1 : c));
-    if (next >= deck.length) {
-      setView("result");
-    } else {
-      setIdx(next);
+    if (mode === "flip") {
+      // Flip back first, then swap word after the CSS transition completes (550ms)
+      // so the new word's answer isn't visible during the flip-back animation.
       setFlipped(false);
-      setSelected(null);
-      if (mode === "mc") setMcOptions(makeOptions(deck, next));
+      clearTimeout(advanceTimer.current);
+      advanceTimer.current = setTimeout(() => {
+        if (next >= deck.length) setView("result");
+        else { setIdx(next); setSelected(null); }
+      }, 550);
+    } else {
+      if (next >= deck.length) {
+        setView("result");
+      } else {
+        setIdx(next);
+        setFlipped(false);
+        setSelected(null);
+        setMcOptions(makeOptions(deck, next));
+      }
     }
   }
 

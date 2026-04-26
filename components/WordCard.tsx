@@ -6,12 +6,13 @@ const JLPT_COLORS: Record<string, string> = {
   N1: "#ef4444", N2: "#f97316", N3: "#d97706", N4: "#0d9488", N5: "#4f46e5",
 };
 
-export default function WordCard({ result }: { result: SearchResult }) {
+export default function WordCard({ result, from }: { result: SearchResult; from?: string }) {
+  const wordHref = from ? `/word/${result.id}?from=${encodeURIComponent(from)}` : `/word/${result.id}`;
   return (
     <div className="card bg-white p-5 flex flex-col gap-2.5">
       {/* Top row */}
       <div className="flex justify-between items-start gap-2">
-        <Link href={`/word/${result.id}`} className="flex-1 min-w-0 no-underline group">
+        <Link href={wordHref} className="flex-1 min-w-0 no-underline group">
           <div
             className="jp-text font-bold leading-none transition-colors group-hover:text-[var(--accent)]"
             style={{ fontSize: "clamp(1.6rem, 4vw, 2rem)", color: "var(--text)" }}
@@ -61,7 +62,7 @@ export default function WordCard({ result }: { result: SearchResult }) {
       <div style={{ height: "1px", background: "var(--border)" }} />
 
       {/* Meaning */}
-      <Link href={`/word/${result.id}`} className="no-underline">
+      <Link href={wordHref} className="no-underline">
         <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "var(--muted)" }}>
           {result.meanings.slice(0, 3).join("; ")}
         </p>

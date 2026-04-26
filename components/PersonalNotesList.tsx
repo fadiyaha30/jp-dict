@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { DbPersonalNote } from "@/lib/db";
 
 interface Props {
@@ -47,7 +48,7 @@ export default function PersonalNotesList({ initial }: Props) {
     });
     const { id } = await res.json();
     const now = Date.now();
-    setNotes([{ id, ...addForm, phrase: addForm.phrase.trim(), meaning: addForm.meaning.trim(), context: addForm.context.trim(), created_at: now, updated_at: now }, ...notes]);
+    setNotes([{ id, ...addForm, phrase: addForm.phrase.trim(), meaning: addForm.meaning.trim(), context: addForm.context.trim(), word_id: null, word_kanji: null, created_at: now, updated_at: now }, ...notes]);
     setAddForm(emptyForm());
     setShowAdd(false);
     setSaving(false);
@@ -174,9 +175,20 @@ function NoteCard({
         <p className="text-xs italic" style={{ color: "var(--muted)" }}>📍 {note.context}</p>
       )}
       <div className="flex items-center justify-between pt-1">
-        <span className="text-xs" style={{ color: "var(--muted)" }}>
-          {formatDate(note.updated_at)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs" style={{ color: "var(--muted)" }}>
+            {formatDate(note.updated_at)}
+          </span>
+          {note.word_id && note.word_kanji && (
+            <Link
+              href={`/word/${note.word_id}`}
+              className="jp-text text-xs px-2 py-0.5 rounded-lg transition-colors hover:opacity-80"
+              style={{ background: "var(--subtle)", color: "var(--accent)" }}
+            >
+              {note.word_kanji}
+            </Link>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {confirmDelete ? (
             <>

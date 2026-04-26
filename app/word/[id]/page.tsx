@@ -11,6 +11,7 @@ import { extractKanji, fetchKanjiSvg } from "@/lib/kanjivg";
 
 interface WordPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
 export async function generateMetadata({ params }: WordPageProps) {
@@ -27,8 +28,10 @@ const JLPT_COLORS: Record<string, string> = {
   N1: "#ef4444", N2: "#f97316", N3: "#d97706", N4: "#0d9488", N5: "#4f46e5",
 };
 
-export default async function WordPage({ params }: WordPageProps) {
+export default async function WordPage({ params, searchParams }: WordPageProps) {
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = from ?? "/search";
   const detail = getWordDetail(id);
   if (!detail) notFound();
 
@@ -68,7 +71,7 @@ export default async function WordPage({ params }: WordPageProps) {
 
       {/* ── Back link ───────────────────────────────────── */}
       <Link
-        href="/search"
+        href={backHref}
         className="inline-flex items-center gap-1.5 text-sm mb-6 transition-colors"
         style={{ color: "var(--muted)" }}
       >

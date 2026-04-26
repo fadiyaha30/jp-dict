@@ -61,7 +61,7 @@ export default function WordPageTabs({ word, examples, searchWord, result, conju
       {activeTab === "conjugation" && conjugation && <Conjugation table={conjugation} />}
       {activeTab === "strokes" && <KanjiStrokes chars={kanjiSvgs} />}
       {activeTab === "examples" && <ExampleSentences examples={examples} word={searchWord} />}
-      {activeTab === "notes" && <UserNotes wordId={result.id} />}
+      {activeTab === "notes" && <UserNotes wordId={result.id} wordKanji={result.kanji} wordMeaning={result.meanings[0] ?? ""} />}
     </div>
   );
 }

@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import type { DbPersonalNote } from "@/lib/db";
 
-interface UserExample {
-  id: number;
-  text: string;
-  translation: string;
-  created_at: number;
+interface NoteForm {
+  phrase: string;
+  meaning: string;
+  context: string;
 }
 
 const inputStyle: React.CSSProperties = {
-  background: "var(--surface)",
+  background: "var(--subtle)",
   border: "1px solid var(--border)",
   borderRadius: "0.625rem",
   padding: "0.5rem 0.75rem",
@@ -21,64 +21,88 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
   width: "100%",
   fontFamily: "var(--font-noto-sans-jp), sans-serif",
-  transition: "border-color 0.15s",
 };
 
-export default function UserNotes({ wordId }: { wordId: string }) {
+export default function UserNotes({
+  wordId,
+  wordKanji,
+  wordMeaning,
+}: {
+  wordId: string;
+  wordKanji: string;
+  wordMeaning: string;
+}) {
   const { data: session, status } = useSession();
   const isLoggedIn = !!session?.user;
-  const [note, setNote] = useState("");
-  const [savedNote, setSavedNote] = useState("");
-  const [examples, setExamples] = useState<UserExample[]>([]);
-  const [newText, setNewText] = useState("");
-  const [newTranslation, setNewTranslation] = useState("");
-  const [savingNote, setSavingNote] = useState(false);
-  const [addingExample, setAddingExample] = useState(false);
+
+  const [notes, setNotes] = useState<DbPersonalNote[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState<NoteForm>({ phrase: "", meaning: wordMeaning, context: "" });
+  const [saving, setSaving] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<NoteForm>({ phrase: "", meaning: "", context: "" });
 
   useEffect(() => {
     if (!isLoggedIn) return;
-    fetch(`/api/notes/${wordId}`)
+    fetch(`/api/personal-notes?wordId=${encodeURIComponent(wordId)}`)
       .then((r) => r.json())
-      .then((data) => {
-        setNote(data.note ?? "");
-        setSavedNote(data.note ?? "");
-        setExamples(data.examples ?? []);
-      });
+      .then(setNotes);
   }, [wordId, isLoggedIn]);
 
-  async function handleSaveNote() {
-    setSavingNote(true);
-    await fetch(`/api/notes/${wordId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ note }),
-    });
-    setSavedNote(note);
-    setSavingNote(false);
-  }
-
-  async function handleAddExample(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!newText.trim()) return;
-    setAddingExample(true);
-    const res = await fetch(`/api/notes/${wordId}/examples`, {
+    if (!form.phrase.trim()) return;
+    setSaving(true);
+    const res = await fetch("/api/personal-notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: newText, translation: newTranslation }),
+      body: JSON.stringify({ ...form, word_id: wordId, word_kanji: wordKanji }),
     });
-    const data = await res.json();
-    setExamples((prev) => [
+    const { id } = await res.json();
+    const now = Date.now();
+    setNotes((prev) => [
+      {
+        id,
+        phrase: form.phrase.trim(),
+        meaning: form.meaning.trim(),
+        context: form.context.trim(),
+        word_id: wordId,
+        word_kanji: wordKanji,
+        created_at: now,
+        updated_at: now,
+      },
       ...prev,
-      { id: data.id, text: newText, translation: newTranslation, created_at: Date.now() },
     ]);
-    setNewText("");
-    setNewTranslation("");
-    setAddingExample(false);
+    setForm({ phrase: "", meaning: wordMeaning, context: "" });
+    setShowAdd(false);
+    setSaving(false);
   }
 
-  async function handleDeleteExample(id: number) {
-    await fetch(`/api/notes/${wordId}/examples/${id}`, { method: "DELETE" });
-    setExamples((prev) => prev.filter((e) => e.id !== id));
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editForm.phrase.trim() || editId === null) return;
+    setSaving(true);
+    await fetch(`/api/personal-notes/${editId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editForm),
+    });
+    setNotes((prev) =>
+      prev.map((n) =>
+        n.id === editId
+          ? { ...n, phrase: editForm.phrase.trim(), meaning: editForm.meaning.trim(), context: editForm.context.trim(), updated_at: Date.now() }
+          : n
+      )
+    );
+    setEditId(null);
+    setSaving(false);
+  }
+
+  async function handleDelete(id: number) {
+    await fetch(`/api/personal-notes/${id}`, { method: "DELETE" });
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+    setConfirmDeleteId(null);
   }
 
   if (status === "loading") return null;
@@ -89,101 +113,233 @@ export default function UserNotes({ wordId }: { wordId: string }) {
         <Link href="/login" style={{ color: "var(--accent)" }} className="hover:underline">
           Sign in
         </Link>{" "}
-        to add personal notes and examples.
+        to add personal notes.
       </p>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Note */}
-      <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-          Personal Note
+    <div className="flex flex-col gap-5">
+      {/* Notes list */}
+      {notes.length === 0 && !showAdd && (
+        <p className="text-sm py-4" style={{ color: "var(--muted)" }}>
+          No notes for this word yet.
         </p>
-        <textarea
-          placeholder="Memory tricks, usage tips, context…"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          rows={3}
-          style={{ ...inputStyle, resize: "vertical" }}
-          onFocus={(e) => (e.target.style.borderColor = "var(--accent-mid)")}
-          onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-        />
-        <div className="flex justify-end">
-          <button
-            disabled={note === savedNote || savingNote}
-            onClick={handleSaveNote}
-            className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40"
-            style={{ background: "var(--accent)", color: "white" }}
+      )}
+
+      {notes.map((note) =>
+        editId === note.id ? (
+          <form
+            key={note.id}
+            onSubmit={handleEdit}
+            className="rounded-2xl p-5 flex flex-col gap-4"
+            style={{ background: "var(--surface)", border: "1px solid #c7d2fe" }}
           >
-            {savingNote ? "Saving…" : "Save note"}
-          </button>
-        </div>
-      </div>
-
-      {/* Examples */}
-      <div className="flex flex-col gap-3">
-        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-          My Examples
-        </p>
-
-        {examples.length === 0 && (
-          <p className="text-sm" style={{ color: "var(--muted)" }}>No examples yet.</p>
-        )}
-
-        {examples.map((ex) => (
+            <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>Edit Note</p>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+                  Phrase / Sentence <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={editForm.phrase}
+                  onChange={(e) => setEditForm({ ...editForm, phrase: e.target.value })}
+                  className="jp-text resize-none"
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>Meaning / Translation</label>
+                <input
+                  type="text"
+                  value={editForm.meaning}
+                  onChange={(e) => setEditForm({ ...editForm, meaning: e.target.value })}
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+                  Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.context}
+                  onChange={(e) => setEditForm({ ...editForm, context: e.target.value })}
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setEditId(null)}
+                className="px-4 py-2 rounded-xl text-sm"
+                style={{ background: "var(--subtle)", color: "var(--muted)" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving || !editForm.phrase.trim()}
+                className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
+                style={{ background: "var(--accent)", color: "white" }}
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </form>
+        ) : (
           <div
-            key={ex.id}
-            className="pl-4 py-1 group flex justify-between items-start gap-2"
-            style={{ borderLeft: "2px solid var(--border)" }}
+            key={note.id}
+            className="rounded-2xl p-4 flex flex-col gap-2"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
           >
-            <div className="flex-1 min-w-0">
-              <p className="jp-text font-medium text-sm" style={{ color: "var(--text)" }}>{ex.text}</p>
-              {ex.translation && (
-                <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>{ex.translation}</p>
+            <p className="jp-text text-base font-medium leading-relaxed" style={{ color: "var(--text)" }}>
+              {note.phrase}
+            </p>
+            {note.meaning && (
+              <p className="text-sm" style={{ color: "var(--text)" }}>{note.meaning}</p>
+            )}
+            {note.context && (
+              <p className="text-xs italic" style={{ color: "var(--muted)" }}>📍 {note.context}</p>
+            )}
+            <div className="flex justify-end gap-2 mt-1">
+              <button
+                onClick={() => { setEditId(note.id); setEditForm({ phrase: note.phrase, meaning: note.meaning, context: note.context }); setShowAdd(false); }}
+                className="text-xs px-2.5 py-1 rounded-lg transition-colors"
+                style={{ background: "var(--subtle)", color: "var(--muted)" }}
+              >
+                Edit
+              </button>
+              {confirmDeleteId === note.id ? (
+                <>
+                  <span className="text-xs self-center" style={{ color: "var(--muted)" }}>Delete?</span>
+                  <button
+                    onClick={() => handleDelete(note.id)}
+                    className="text-xs px-2.5 py-1 rounded-lg font-medium"
+                    style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="text-xs px-2.5 py-1 rounded-lg"
+                    style={{ background: "var(--subtle)", color: "var(--muted)" }}
+                  >
+                    No
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setConfirmDeleteId(note.id)}
+                  className="text-xs px-2.5 py-1 rounded-lg transition-colors"
+                  style={{ background: "var(--subtle)", color: "var(--muted)" }}
+                >
+                  Delete
+                </button>
               )}
             </div>
-            <button
-              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs px-2 py-1 rounded"
-              style={{ background: "#fee2e2", color: "#dc2626", border: "none" }}
-              onClick={() => handleDeleteExample(ex.id)}
-              aria-label="Delete"
-            >
-              ×
-            </button>
           </div>
-        ))}
+        )
+      )}
 
-        <form onSubmit={handleAddExample} className="flex flex-col gap-2 pt-1">
-          <input
-            placeholder="Your example sentence"
-            value={newText}
-            onChange={(e) => setNewText(e.target.value)}
-            style={inputStyle}
-            className="jp-text"
-            onFocus={(e) => (e.target.style.borderColor = "var(--accent-mid)")}
-            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-          />
-          <input
-            placeholder="Translation (optional)"
-            value={newTranslation}
-            onChange={(e) => setNewTranslation(e.target.value)}
-            style={inputStyle}
-            onFocus={(e) => (e.target.style.borderColor = "var(--accent-mid)")}
-            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-          />
-          <div className="flex justify-end">
+      {/* Add form */}
+      {showAdd && (
+        <form
+          onSubmit={handleAdd}
+          className="rounded-2xl p-5 flex flex-col gap-4"
+          style={{ background: "var(--surface)", border: "1px solid #c7d2fe" }}
+        >
+          <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>New Note</p>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+                Phrase / Sentence <span style={{ color: "#ef4444" }}>*</span>
+              </label>
+              <textarea
+                rows={2}
+                value={form.phrase}
+                onChange={(e) => setForm({ ...form, phrase: e.target.value })}
+                placeholder={`Your sentence using ${wordKanji}…`}
+                className="jp-text resize-none"
+                style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>Meaning / Translation</label>
+              <input
+                type="text"
+                value={form.meaning}
+                onChange={(e) => setForm({ ...form, meaning: e.target.value })}
+                placeholder="Translation or memory tip"
+                style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
+                Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={form.context}
+                onChange={(e) => setForm({ ...form, context: e.target.value })}
+                placeholder="Where did you hear it?"
+                style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={() => { setShowAdd(false); setForm({ phrase: "", meaning: wordMeaning, context: "" }); }}
+              className="px-4 py-2 rounded-xl text-sm"
+              style={{ background: "var(--subtle)", color: "var(--muted)" }}
+            >
+              Cancel
+            </button>
             <button
               type="submit"
-              disabled={!newText.trim() || addingExample}
-              className="px-4 py-1.5 rounded-lg text-xs font-medium disabled:opacity-40"
+              disabled={saving || !form.phrase.trim()}
+              className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
               style={{ background: "var(--accent)", color: "white" }}
             >
-              {addingExample ? "Adding…" : "Add example"}
+              {saving ? "Saving…" : "Save"}
             </button>
           </div>
         </form>
+      )}
+
+      {/* Toolbar */}
+      <div className="flex items-center justify-between">
+        {!showAdd && (
+          <button
+            onClick={() => setShowAdd(true)}
+            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: "var(--accent)", color: "white" }}
+          >
+            + Add note
+          </button>
+        )}
+        <Link
+          href="/notes"
+          className="text-xs ml-auto transition-colors hover:underline"
+          style={{ color: "var(--muted)" }}
+        >
+          View all personal notes →
+        </Link>
       </div>
     </div>
   );

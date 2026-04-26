@@ -70,6 +70,10 @@ db.exec(`
   );
 `);
 
+// Migrations
+try { db.exec("ALTER TABLE personal_notes ADD COLUMN word_id TEXT") } catch {}
+try { db.exec("ALTER TABLE personal_notes ADD COLUMN word_kanji TEXT") } catch {}
+
 // ── Users ─────────────────────────────────────────────────────────────────────
 
 export interface DbUser {
@@ -246,26 +250,36 @@ export interface DbPersonalNote {
   phrase: string;
   meaning: string;
   context: string;
+  word_id: string | null;
+  word_kanji: string | null;
   created_at: number;
   updated_at: number;
 }
 
 export function getPersonalNotes(userId: number): DbPersonalNote[] {
   return db
-    .prepare("SELECT id, phrase, meaning, context, created_at, updated_at FROM personal_notes WHERE user_id = ? ORDER BY updated_at DESC")
+    .prepare("SELECT id, phrase, meaning, context, word_id, word_kanji, created_at, updated_at FROM personal_notes WHERE user_id = ? ORDER BY updated_at DESC")
     .all(userId) as DbPersonalNote[];
+}
+
+export function getPersonalNotesByWord(userId: number, wordId: string): DbPersonalNote[] {
+  return db
+    .prepare("SELECT id, phrase, meaning, context, word_id, word_kanji, created_at, updated_at FROM personal_notes WHERE user_id = ? AND word_id = ? ORDER BY updated_at DESC")
+    .all(userId, wordId) as DbPersonalNote[];
 }
 
 export function addPersonalNote(
   userId: number,
   phrase: string,
   meaning: string,
-  context: string
+  context: string,
+  wordId?: string,
+  wordKanji?: string
 ): number {
   const now = Date.now();
   const result = db
-    .prepare("INSERT INTO personal_notes (user_id, phrase, meaning, context, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-    .run(userId, phrase, meaning, context, now, now);
+    .prepare("INSERT INTO personal_notes (user_id, phrase, meaning, context, word_id, word_kanji, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(userId, phrase, meaning, context, wordId ?? null, wordKanji ?? null, now, now);
   return result.lastInsertRowid as number;
 }
 
