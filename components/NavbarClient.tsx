@@ -2,20 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import LogoutButton from "./LogoutButton";
+import { signOut } from "next-auth/react";
+import { useState, useRef, useEffect } from "react";
+
+const NAV_LINKS = [
+  { href: "/grammar", label: "Grammar" },
+  { href: "/kana", label: "Kana" },
+  { href: "/record", label: "Record" },
+  { href: "/favorites", label: "Favorites" },
+  { href: "/history", label: "History" },
+  { href: "/notes", label: "Notes" },
+  { href: "/quiz", label: "Quiz" },
+];
 
 export default function NavbarClient({ username }: { username: string | null }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const link = (href: string, label: string) => (
-    <Link
-      href={href}
-      className="text-sm transition-colors"
-      style={{ color: pathname === href ? "var(--accent)" : "var(--muted)" }}
-    >
-      {label}
-    </Link>
-  );
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header
@@ -27,34 +40,93 @@ export default function NavbarClient({ username }: { username: string | null }) 
         borderColor: "var(--border)",
       }}
     >
-      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 no-underline">
+      <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center gap-6">
+        <Link href="/" className="flex items-center gap-2 no-underline shrink-0">
           <span className="jp-text text-xl font-black" style={{ color: "var(--accent)" }}>辞</span>
           <span className="font-bold text-base tracking-tight" style={{ color: "var(--text)" }}>ファヤの辞書</span>
         </Link>
 
-        <nav className="flex items-center gap-6">
-          {link("/grammar", "Grammar")}
-          {link("/kana", "Kana")}
-          {link("/record", "Record")}
-          {link("/favorites", "Favorites")}
-          {link("/history", "History")}
-          {link("/notes", "Notes")}
-          {link("/quiz", "Quiz")}
-
-          {username ? (
-            <div className="flex items-center gap-3">
-              <span
-                className="text-xs px-3 py-1 rounded-full font-medium"
-                style={{ background: "var(--accent-pale)", color: "var(--accent)", border: "1px solid #c7d2fe" }}
+        <nav className="flex items-center gap-0.5 flex-1">
+          {NAV_LINKS.map(({ href, label }) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="text-sm px-3 py-1.5 rounded-md transition-all"
+                style={{
+                  color: active ? "var(--accent)" : "var(--muted)",
+                  background: active ? "var(--accent-pale)" : "transparent",
+                  fontWeight: active ? 500 : 400,
+                }}
               >
-                {username}
-              </span>
-              <LogoutButton />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="shrink-0">
+          {username ? (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-full transition-all"
+                style={{
+                  border: "1px solid var(--border)",
+                  background: menuOpen ? "var(--accent-pale)" : "transparent",
+                }}
+              >
+                <span
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                  style={{ background: "var(--accent)", color: "white" }}
+                >
+                  {username[0].toUpperCase()}
+                </span>
+                <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
+                  {username}
+                </span>
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  style={{
+                    color: "var(--muted)",
+                    transform: menuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.15s ease",
+                  }}
+                >
+                  <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {menuOpen && (
+                <div
+                  className="absolute right-0 mt-1.5 w-36 rounded-lg overflow-hidden shadow-md"
+                  style={{ background: "var(--bg)", border: "1px solid var(--border)", top: "100%" }}
+                >
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="w-full text-left px-4 py-2.5 text-sm transition-colors"
+                    style={{ color: "var(--muted)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="flex items-center gap-4">
-              {link("/login", "Sign in")}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="text-sm transition-colors"
+                style={{ color: pathname === "/login" ? "var(--accent)" : "var(--muted)" }}
+              >
+                Sign in
+              </Link>
               <Link
                 href="/register"
                 className="text-sm px-4 py-1.5 rounded-full font-medium transition-all hover:opacity-90"
@@ -64,7 +136,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
               </Link>
             </div>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
