@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { DbPersonalNote } from "@/lib/db";
 
 interface Props {
   initial: DbPersonalNote[];
+  initialTab: string;
 }
 
 interface NoteForm {
@@ -20,8 +22,15 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
-export default function PersonalNotesList({ initial }: Props) {
+type Tab = "all" | "words" | "grammar";
+
+export default function PersonalNotesList({ initial, initialTab }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [notes, setNotes] = useState<DbPersonalNote[]>(initial);
+  const [tab, setTab] = useState<Tab>((initialTab as Tab) || "all");
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState<NoteForm>(emptyForm());
   const [editId, setEditId] = useState<number | null>(null);
@@ -29,14 +38,33 @@ export default function PersonalNotesList({ initial }: Props) {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
 
+  function switchTab(t: Tab) {
+    setTab(t);
+    const params = new URLSearchParams(searchParams.toString());
+    if (t === "all") params.delete("tab");
+    else params.set("tab", t);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }
+
+  const byTab = notes.filter((n) => {
+    if (tab === "words") return !!n.word_id;
+    if (tab === "grammar") return !!n.grammar_id;
+    return true;
+  });
+
   const filtered = search.trim()
-    ? notes.filter(
+    ? byTab.filter(
         (n) =>
           n.phrase.includes(search) ||
           n.meaning.toLowerCase().includes(search.toLowerCase()) ||
-          n.context.toLowerCase().includes(search.toLowerCase())
+          n.context.toLowerCase().includes(search.toLowerCase()) ||
+          (n.word_kanji ?? "").includes(search) ||
+          (n.grammar_pattern ?? "").includes(search)
       )
-    : notes;
+    : byTab;
+
+  const wordCount = notes.filter((n) => !!n.word_id).length;
+  const grammarCount = notes.filter((n) => !!n.grammar_id).length;
 
   async function handleAdd() {
     if (!addForm.phrase.trim()) return;
@@ -48,7 +76,22 @@ export default function PersonalNotesList({ initial }: Props) {
     });
     const { id } = await res.json();
     const now = Date.now();
-    setNotes([{ id, ...addForm, phrase: addForm.phrase.trim(), meaning: addForm.meaning.trim(), context: addForm.context.trim(), word_id: null, word_kanji: null, created_at: now, updated_at: now }, ...notes]);
+    setNotes([
+      {
+        id,
+        ...addForm,
+        phrase: addForm.phrase.trim(),
+        meaning: addForm.meaning.trim(),
+        context: addForm.context.trim(),
+        word_id: null,
+        word_kanji: null,
+        grammar_id: null,
+        grammar_pattern: null,
+        created_at: now,
+        updated_at: now,
+      },
+      ...notes,
+    ]);
     setAddForm(emptyForm());
     setShowAdd(false);
     setSaving(false);
@@ -83,6 +126,29 @@ export default function PersonalNotesList({ initial }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {([
+          ["all", "All", notes.length],
+          ["words", "Words", wordCount],
+          ["grammar", "Grammar", grammarCount],
+        ] as [Tab, string, number][]).map(([t, label, count]) => (
+          <button
+            key={t}
+            onClick={() => switchTab(t)}
+            className="text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+            style={{
+              background: tab === t ? "var(--accent)" + "18" : "var(--surface)",
+              border: `1px solid ${tab === t ? "var(--accent)" : "var(--border)"}`,
+              color: tab === t ? "var(--accent)" : "var(--muted)",
+            }}
+          >
+            {label}
+            <span className="ml-1.5 text-[10px]" style={{ opacity: 0.7 }}>{count}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Toolbar */}
       <div className="flex items-center gap-3">
         <input
@@ -122,7 +188,13 @@ export default function PersonalNotesList({ initial }: Props) {
             {search ? "No matching notes" : "No notes yet"}
           </p>
           <p className="text-sm text-center" style={{ color: "var(--muted)" }}>
-            {search ? "Try a different search term." : "Jot down phrases you hear and want to remember."}
+            {search
+              ? "Try a different search term."
+              : tab === "grammar"
+              ? "Open a grammar point and add a note there."
+              : tab === "words"
+              ? "Open a word and add a note there."
+              : "Jot down phrases you hear and want to remember."}
           </p>
         </div>
       )}
@@ -175,7 +247,7 @@ function NoteCard({
         <p className="text-xs italic" style={{ color: "var(--muted)" }}>📍 {note.context}</p>
       )}
       <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs" style={{ color: "var(--muted)" }}>
             {formatDate(note.updated_at)}
           </span>
@@ -186,6 +258,15 @@ function NoteCard({
               style={{ background: "var(--subtle)", color: "var(--accent)" }}
             >
               {note.word_kanji}
+            </Link>
+          )}
+          {note.grammar_id && note.grammar_pattern && (
+            <Link
+              href={`/grammar/${note.grammar_id}`}
+              className="jp-text text-xs px-2 py-0.5 rounded-lg transition-colors hover:opacity-80"
+              style={{ background: "#d97706" + "18", color: "#d97706" }}
+            >
+              {note.grammar_pattern}
             </Link>
           )}
         </div>
@@ -275,7 +356,7 @@ function NoteFormCard({
             type="text"
             value={form.meaning}
             onChange={(e) => onChange({ ...form, meaning: e.target.value })}
-            placeholder="e.g. Good work today / Thank you for your hard work"
+            placeholder="e.g. Good work today"
             className="rounded-xl px-4 py-2.5 text-sm outline-none"
             style={{ background: "var(--subtle)", border: "1px solid var(--border)", color: "var(--text)" }}
             onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
@@ -284,7 +365,7 @@ function NoteFormCard({
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-            Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional — where did you hear it?)</span>
+            Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
           </label>
           <input
             type="text"

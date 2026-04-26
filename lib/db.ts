@@ -68,11 +68,24 @@ db.exec(`
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS grammar_favorites (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    grammar_id TEXT    NOT NULL,
+    pattern    TEXT    NOT NULL,
+    meaning    TEXT    NOT NULL DEFAULT '',
+    jlpt       TEXT    NOT NULL DEFAULT '',
+    saved_at   INTEGER NOT NULL,
+    UNIQUE(user_id, grammar_id)
+  );
 `);
 
 // Migrations
 try { db.exec("ALTER TABLE personal_notes ADD COLUMN word_id TEXT") } catch {}
 try { db.exec("ALTER TABLE personal_notes ADD COLUMN word_kanji TEXT") } catch {}
+try { db.exec("ALTER TABLE personal_notes ADD COLUMN grammar_id TEXT") } catch {}
+try { db.exec("ALTER TABLE personal_notes ADD COLUMN grammar_pattern TEXT") } catch {}
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -252,20 +265,30 @@ export interface DbPersonalNote {
   context: string;
   word_id: string | null;
   word_kanji: string | null;
+  grammar_id: string | null;
+  grammar_pattern: string | null;
   created_at: number;
   updated_at: number;
 }
 
+const NOTE_COLS = "id, phrase, meaning, context, word_id, word_kanji, grammar_id, grammar_pattern, created_at, updated_at";
+
 export function getPersonalNotes(userId: number): DbPersonalNote[] {
   return db
-    .prepare("SELECT id, phrase, meaning, context, word_id, word_kanji, created_at, updated_at FROM personal_notes WHERE user_id = ? ORDER BY updated_at DESC")
+    .prepare(`SELECT ${NOTE_COLS} FROM personal_notes WHERE user_id = ? ORDER BY updated_at DESC`)
     .all(userId) as DbPersonalNote[];
 }
 
 export function getPersonalNotesByWord(userId: number, wordId: string): DbPersonalNote[] {
   return db
-    .prepare("SELECT id, phrase, meaning, context, word_id, word_kanji, created_at, updated_at FROM personal_notes WHERE user_id = ? AND word_id = ? ORDER BY updated_at DESC")
+    .prepare(`SELECT ${NOTE_COLS} FROM personal_notes WHERE user_id = ? AND word_id = ? ORDER BY updated_at DESC`)
     .all(userId, wordId) as DbPersonalNote[];
+}
+
+export function getPersonalNotesByGrammar(userId: number, grammarId: string): DbPersonalNote[] {
+  return db
+    .prepare(`SELECT ${NOTE_COLS} FROM personal_notes WHERE user_id = ? AND grammar_id = ? ORDER BY updated_at DESC`)
+    .all(userId, grammarId) as DbPersonalNote[];
 }
 
 export function addPersonalNote(
@@ -274,12 +297,14 @@ export function addPersonalNote(
   meaning: string,
   context: string,
   wordId?: string,
-  wordKanji?: string
+  wordKanji?: string,
+  grammarId?: string,
+  grammarPattern?: string
 ): number {
   const now = Date.now();
   const result = db
-    .prepare("INSERT INTO personal_notes (user_id, phrase, meaning, context, word_id, word_kanji, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-    .run(userId, phrase, meaning, context, wordId ?? null, wordKanji ?? null, now, now);
+    .prepare("INSERT INTO personal_notes (user_id, phrase, meaning, context, word_id, word_kanji, grammar_id, grammar_pattern, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(userId, phrase, meaning, context, wordId ?? null, wordKanji ?? null, grammarId ?? null, grammarPattern ?? null, now, now);
   return result.lastInsertRowid as number;
 }
 
@@ -297,4 +322,43 @@ export function updatePersonalNote(
 
 export function deletePersonalNote(userId: number, noteId: number) {
   db.prepare("DELETE FROM personal_notes WHERE id = ? AND user_id = ?").run(noteId, userId);
+}
+
+// ── Grammar Favorites ─────────────────────────────────────────────────────────
+
+export interface DbGrammarFavorite {
+  id: number;
+  grammar_id: string;
+  pattern: string;
+  meaning: string;
+  jlpt: string;
+  saved_at: number;
+}
+
+export function getGrammarFavoritesByUserId(userId: number): DbGrammarFavorite[] {
+  return db
+    .prepare("SELECT id, grammar_id, pattern, meaning, jlpt, saved_at FROM grammar_favorites WHERE user_id = ? ORDER BY saved_at DESC")
+    .all(userId) as DbGrammarFavorite[];
+}
+
+export function isGrammarFavoritedInDb(userId: number, grammarId: string): boolean {
+  return !!db
+    .prepare("SELECT 1 FROM grammar_favorites WHERE user_id = ? AND grammar_id = ?")
+    .get(userId, grammarId);
+}
+
+export function addGrammarFavoriteToDb(
+  userId: number,
+  grammarId: string,
+  pattern: string,
+  meaning: string,
+  jlpt: string
+) {
+  db.prepare(
+    "INSERT OR REPLACE INTO grammar_favorites (user_id, grammar_id, pattern, meaning, jlpt, saved_at) VALUES (?, ?, ?, ?, ?, ?)"
+  ).run(userId, grammarId, pattern, meaning, jlpt, Date.now());
+}
+
+export function removeGrammarFavoriteFromDb(userId: number, grammarId: string) {
+  db.prepare("DELETE FROM grammar_favorites WHERE user_id = ? AND grammar_id = ?").run(userId, grammarId);
 }

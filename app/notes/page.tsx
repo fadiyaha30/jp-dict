@@ -5,10 +5,15 @@ import PersonalNotesList from "@/components/PersonalNotesList";
 
 export const metadata = { title: "Personal Notes — ファヤの辞書" };
 
-export default async function NotesPage() {
+interface PageProps {
+  searchParams: Promise<{ tab?: string }>;
+}
+
+export default async function NotesPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const { tab = "all" } = await searchParams;
   const notes = getPersonalNotes(parseInt(session.user.id));
 
   return (
@@ -19,10 +24,10 @@ export default async function NotesPage() {
             Personal Notes
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
-            Phrases and sentences you want to remember from daily life.
+            Phrases and sentences you want to remember.
           </p>
         </div>
-        <PersonalNotesList initial={notes} />
+        <PersonalNotesList initial={notes} initialTab={tab} />
       </div>
     </main>
   );

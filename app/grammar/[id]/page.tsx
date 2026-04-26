@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGrammarById, getAllGrammar } from "@/lib/grammar";
+import GrammarFavoriteButton from "@/components/GrammarFavoriteButton";
+import GrammarUserNotes from "@/components/GrammarUserNotes";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -56,32 +58,36 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
         {/* Watermark */}
         <div
           className="absolute right-4 top-1/2 -translate-y-1/2 jp-text font-black select-none pointer-events-none"
-          style={{
-            fontSize: "clamp(5rem, 12vw, 8rem)",
-            lineHeight: 1,
-            color,
-            opacity: 0.05,
-          }}
+          style={{ fontSize: "clamp(5rem, 12vw, 8rem)", lineHeight: 1, color, opacity: 0.05 }}
           aria-hidden
         >
           文法
         </div>
 
         <div className="relative flex flex-col gap-3">
-          {/* Pattern + JLPT badge */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <span
-              className="jp-text font-black"
-              style={{ fontSize: "clamp(1.8rem, 5vw, 2.8rem)", color: "var(--text)", lineHeight: 1.1 }}
-            >
-              {g.pattern}
-            </span>
-            <span
-              className="text-sm font-bold px-2.5 py-1 rounded-lg self-start"
-              style={{ background: color + "18", color }}
-            >
-              JLPT {g.jlpt}
-            </span>
+          {/* Pattern + JLPT badge + favorite */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span
+                className="jp-text font-black"
+                style={{ fontSize: "clamp(1.8rem, 5vw, 2.8rem)", color: "var(--text)", lineHeight: 1.1 }}
+              >
+                {g.pattern}
+              </span>
+              <span
+                className="text-sm font-bold px-2.5 py-1 rounded-lg self-start"
+                style={{ background: color + "18", color }}
+              >
+                JLPT {g.jlpt}
+              </span>
+            </div>
+            <GrammarFavoriteButton
+              grammarId={g.id}
+              pattern={g.pattern}
+              meaning={g.meaning}
+              jlpt={g.jlpt}
+              size="md"
+            />
           </div>
 
           {/* Meaning */}
@@ -101,70 +107,40 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
 
       {/* Examples */}
       <section className="mb-6">
-        <h2
-          className="text-xs font-semibold uppercase tracking-widest mb-3"
-          style={{ color: "var(--muted)" }}
-        >
+        <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
           Examples
         </h2>
         <div className="flex flex-col gap-3">
           {g.examples.map((ex, i) => (
-            <div
-              key={i}
-              className="rounded-xl p-4"
-              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-            >
-              <p
-                className="jp-text text-base font-medium mb-1"
-                style={{ color: "var(--text)" }}
-              >
+            <div key={i} className="rounded-xl p-4"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <p className="jp-text text-base font-medium mb-1" style={{ color: "var(--text)" }}>
                 {ex.japanese}
               </p>
-              <p className="text-sm" style={{ color: "var(--muted)" }}>
-                {ex.english}
-              </p>
-              {ex.note && (
-                <p
-                  className="text-xs mt-1.5 italic"
-                  style={{ color: "#b5afa8" }}
-                >
-                  {ex.note}
-                </p>
-              )}
+              <p className="text-sm" style={{ color: "var(--muted)" }}>{ex.english}</p>
+              {ex.note && <p className="text-xs mt-1.5 italic" style={{ color: "#b5afa8" }}>{ex.note}</p>}
             </div>
           ))}
         </div>
       </section>
 
-      {/* Notes */}
+      {/* Grammar notes (site-provided) */}
       {g.notes && (
         <section className="mb-6">
-          <h2
-            className="text-xs font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "var(--muted)" }}
-          >
+          <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
             Notes
           </h2>
-          <div
-            className="rounded-xl p-4 text-sm leading-relaxed"
-            style={{
-              background: color + "08",
-              border: `1px solid ${color}22`,
-              color: "var(--text)",
-            }}
-          >
+          <div className="rounded-xl p-4 text-sm leading-relaxed"
+            style={{ background: color + "08", border: `1px solid ${color}22`, color: "var(--text)" }}>
             {g.notes}
           </div>
         </section>
       )}
 
-      {/* Related patterns — placeholder for future expansion */}
+      {/* Related patterns */}
       {g.related && g.related.length > 0 && (
-        <section>
-          <h2
-            className="text-xs font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "var(--muted)" }}
-          >
+        <section className="mb-6">
+          <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
             Related Patterns
           </h2>
           <div className="flex gap-2 flex-wrap">
@@ -172,16 +148,9 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
               const rel = getGrammarById(relId);
               if (!rel) return null;
               return (
-                <Link
-                  key={relId}
-                  href={`/grammar/${relId}`}
+                <Link key={relId} href={`/grammar/${relId}`}
                   className="text-sm px-3 py-1.5 rounded-full transition-all hover:border-[var(--accent-mid)]"
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    color: "var(--muted)",
-                  }}
-                >
+                  style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted)" }}>
                   {rel.pattern}
                 </Link>
               );
@@ -189,6 +158,14 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
           </div>
         </section>
       )}
+
+      {/* Personal notes */}
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+          My Notes
+        </h2>
+        <GrammarUserNotes grammarId={g.id} grammarPattern={g.pattern} />
+      </section>
     </main>
   );
 }
