@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 type KanaEntry = { kana: string; romaji: string } | null;
 type KanaRow = { group: string; cells: KanaEntry[] };
@@ -82,7 +82,7 @@ const COMBO_K: ComboRow[] = [
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function Cell({ entry, showRomaji }: { entry: KanaEntry; showRomaji: boolean }) {
+function Cell({ entry, showRomaji, onClick }: { entry: KanaEntry; showRomaji: boolean; onClick: (e: KanaEntry) => void }) {
   if (!entry) {
     return (
       <td className="p-1">
@@ -92,8 +92,9 @@ function Cell({ entry, showRomaji }: { entry: KanaEntry; showRomaji: boolean }) 
   }
   return (
     <td className="p-1">
-      <div
-        className="w-14 flex flex-col items-center justify-center gap-0.5 py-2 rounded-xl cursor-default transition-colors hover:bg-[var(--subtle)]"
+      <button
+        onClick={() => onClick(entry)}
+        className="w-14 flex flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-colors hover:bg-[var(--subtle)]"
         style={{ border: "1px solid transparent" }}
         onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
         onMouseLeave={(e) => (e.currentTarget.style.borderColor = "transparent")}
@@ -106,17 +107,18 @@ function Cell({ entry, showRomaji }: { entry: KanaEntry; showRomaji: boolean }) 
             {entry.romaji}
           </span>
         )}
-      </div>
+      </button>
     </td>
   );
 }
 
-function ComboCell({ entry, showRomaji }: { entry: KanaEntry; showRomaji: boolean }) {
+function ComboCell({ entry, showRomaji, onClick }: { entry: KanaEntry; showRomaji: boolean; onClick: (e: KanaEntry) => void }) {
   if (!entry) return <td className="p-1"><div className="w-20 h-14 rounded-xl" style={{ background: "var(--subtle)", opacity: 0.4 }} /></td>;
   return (
     <td className="p-1">
-      <div
-        className="w-20 flex flex-col items-center justify-center gap-0.5 py-2 rounded-xl cursor-default transition-colors hover:bg-[var(--subtle)]"
+      <button
+        onClick={() => onClick(entry)}
+        className="w-20 flex flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-colors hover:bg-[var(--subtle)]"
         style={{ border: "1px solid transparent" }}
         onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
         onMouseLeave={(e) => (e.currentTarget.style.borderColor = "transparent")}
@@ -129,7 +131,7 @@ function ComboCell({ entry, showRomaji }: { entry: KanaEntry; showRomaji: boolea
             {entry.romaji}
           </span>
         )}
-      </div>
+      </button>
     </td>
   );
 }
@@ -145,7 +147,7 @@ function GroupLabel({ label }: { label: string }) {
 const VOW_HEADERS = ["a", "i", "u", "e", "o"];
 const COMBO_HEADERS = ["ya", "yu", "yo"];
 
-function MainTable({ rows, showRomaji }: { rows: KanaRow[]; showRomaji: boolean }) {
+function MainTable({ rows, showRomaji, onSelect }: { rows: KanaRow[]; showRomaji: boolean; onSelect: (e: KanaEntry) => void }) {
   return (
     <div className="overflow-x-auto">
       <table className="border-separate mx-auto" style={{ borderSpacing: 0 }}>
@@ -164,7 +166,7 @@ function MainTable({ rows, showRomaji }: { rows: KanaRow[]; showRomaji: boolean 
             <tr key={i}>
               <GroupLabel label={row.group} />
               {row.cells.map((cell, j) => (
-                <Cell key={j} entry={cell} showRomaji={showRomaji} />
+                <Cell key={j} entry={cell} showRomaji={showRomaji} onClick={onSelect} />
               ))}
             </tr>
           ))}
@@ -174,7 +176,7 @@ function MainTable({ rows, showRomaji }: { rows: KanaRow[]; showRomaji: boolean 
   );
 }
 
-function ComboTable({ rows, showRomaji }: { rows: ComboRow[]; showRomaji: boolean }) {
+function ComboTable({ rows, showRomaji, onSelect }: { rows: ComboRow[]; showRomaji: boolean; onSelect: (e: KanaEntry) => void }) {
   return (
     <div className="overflow-x-auto">
       <table className="border-separate mx-auto" style={{ borderSpacing: 0 }}>
@@ -192,9 +194,9 @@ function ComboTable({ rows, showRomaji }: { rows: ComboRow[]; showRomaji: boolea
           {rows.map((row, i) => (
             <tr key={i}>
               <GroupLabel label={row.group} />
-              <ComboCell entry={row.ya} showRomaji={showRomaji} />
-              <ComboCell entry={row.yu} showRomaji={showRomaji} />
-              <ComboCell entry={row.yo} showRomaji={showRomaji} />
+              <ComboCell entry={row.ya} showRomaji={showRomaji} onClick={onSelect} />
+              <ComboCell entry={row.yu} showRomaji={showRomaji} onClick={onSelect} />
+              <ComboCell entry={row.yo} showRomaji={showRomaji} onClick={onSelect} />
             </tr>
           ))}
         </tbody>
@@ -211,6 +213,111 @@ function SectionHeading({ title }: { title: string }) {
   );
 }
 
+// ── Stroke order modal ─────────────────────────────────────────────────────────
+
+function StrokeModal({ entry, onClose }: { entry: KanaEntry; onClose: () => void }) {
+  const [svgs, setSvgs] = useState<{ char: string; svg: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!entry) return;
+    setLoading(true);
+    setSvgs([]);
+    const chars = [...entry.kana];
+    Promise.all(
+      chars.map(async (char) => {
+        const res = await fetch(`/api/kana-stroke?char=${encodeURIComponent(char)}`);
+        const data = await res.json();
+        return { char, svg: data.svg as string | null };
+      })
+    ).then((results) => {
+      setSvgs(results.filter((r): r is { char: string; svg: string } => r.svg !== null));
+      setLoading(false);
+    });
+  }, [entry]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  if (!entry) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.45)" }} />
+      <div
+        className="relative rounded-2xl p-6 w-full max-w-sm flex flex-col gap-5"
+        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-1">
+            <span className="jp-text font-black" style={{ fontSize: "3rem", lineHeight: 1, color: "var(--text)" }}>
+              {entry.kana}
+            </span>
+            <span className="text-sm font-mono tracking-wider" style={{ color: "var(--muted)" }}>
+              {entry.romaji}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-1.5 transition-colors hover:bg-[var(--subtle)]"
+            style={{ color: "var(--muted)" }}
+            aria-label="Close"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Stroke diagrams */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+            Stroke Order
+          </p>
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+            </div>
+          ) : svgs.length === 0 ? (
+            <p className="text-sm py-4 text-center" style={{ color: "var(--muted)" }}>
+              No stroke data available.
+            </p>
+          ) : (
+            <div className="flex gap-4 flex-wrap">
+              {svgs.map(({ char, svg }) => (
+                <div key={char} className="flex flex-col items-center gap-2">
+                  {entry.kana.length > 1 && (
+                    <span className="jp-text text-sm font-medium" style={{ color: "var(--muted)" }}>{char}</span>
+                  )}
+                  <div
+                    className="rounded-xl p-2"
+                    style={{ width: 140, height: 140, background: "var(--subtle)", border: "1px solid var(--border)" }}
+                    dangerouslySetInnerHTML={{ __html: svg }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <p className="text-[11px]" style={{ color: "var(--muted)" }}>
+          Numbers indicate stroke order. Write each stroke in sequence.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 type Tab = "hiragana" | "katakana";
@@ -218,14 +325,20 @@ type Tab = "hiragana" | "katakana";
 export default function KanaClient() {
   const [tab, setTab] = useState<Tab>("hiragana");
   const [showRomaji, setShowRomaji] = useState(true);
+  const [selected, setSelected] = useState<KanaEntry>(null);
 
   const isHira = tab === "hiragana";
   const main = isHira ? MAIN_H : MAIN_K;
   const daku = isHira ? DAKU_H : DAKU_K;
   const combo = isHira ? COMBO_H : COMBO_K;
 
+  const handleSelect = useCallback((entry: KanaEntry) => setSelected(entry), []);
+  const handleClose = useCallback(() => setSelected(null), []);
+
   return (
     <div className="flex flex-col gap-2">
+      {selected && <StrokeModal entry={selected} onClose={handleClose} />}
+
       {/* Controls */}
       <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
         {/* Tabs */}
@@ -264,19 +377,24 @@ export default function KanaClient() {
         </button>
       </div>
 
+      {/* Hint */}
+      <p className="text-xs text-center mb-1" style={{ color: "var(--muted)" }}>
+        Tap any character to see stroke order
+      </p>
+
       {/* Card */}
       <div
         className="rounded-2xl p-5"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         <SectionHeading title="Basic — Gojūon 五十音" />
-        <MainTable rows={main} showRomaji={showRomaji} />
+        <MainTable rows={main} showRomaji={showRomaji} onSelect={handleSelect} />
 
         <SectionHeading title="Voiced — Dakuten 濁点" />
-        <MainTable rows={daku} showRomaji={showRomaji} />
+        <MainTable rows={daku} showRomaji={showRomaji} onSelect={handleSelect} />
 
         <SectionHeading title="Combinations — Yōon 拗音" />
-        <ComboTable rows={combo} showRomaji={showRomaji} />
+        <ComboTable rows={combo} showRomaji={showRomaji} onSelect={handleSelect} />
       </div>
     </div>
   );
