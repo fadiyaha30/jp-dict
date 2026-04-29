@@ -39,9 +39,13 @@ let _jlptMap: Record<string, string> | null = null;
 
 function loadDict(): DictData {
   if (_cache) return _cache;
-  const filePath = path.join(process.cwd(), "data", "jmdict.json");
-  const raw = readFileSync(filePath, "utf-8");
-  _cache = JSON.parse(raw) as DictData;
+  try {
+    const filePath = path.join(process.cwd(), "data", "jmdict.json");
+    const raw = readFileSync(filePath, "utf-8");
+    _cache = JSON.parse(raw) as DictData;
+  } catch {
+    _cache = { words: [] };
+  }
   return _cache;
 }
 

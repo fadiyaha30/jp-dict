@@ -5,7 +5,12 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@mantine/core", "@mantine/hooks"],
   },
   outputFileTracingIncludes: {
-    "/**": ["./data/jmdict.json", "./data/jlpt-map.json", "./data/grammar.json"],
+    "/": ["./data/jmdict.json", "./data/jlpt-map.json"],
+    "/search": ["./data/jmdict.json", "./data/jlpt-map.json"],
+    "/word/[id]": ["./data/jmdict.json", "./data/jlpt-map.json"],
+    "/quiz": ["./data/jmdict.json", "./data/jlpt-map.json"],
+    "/grammar/[id]": ["./data/grammar.json"],
+    "/grammar": ["./data/grammar.json"],
   },
   serverExternalPackages: ["better-sqlite3", "kuroshiro", "kuroshiro-analyzer-kuromoji", "kuromoji", "nodejs-whisper"],
   webpack: (config, { isServer }) => {
