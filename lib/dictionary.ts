@@ -44,7 +44,7 @@ function loadDict(): DictData {
     const raw = readFileSync(filePath, "utf-8");
     _cache = JSON.parse(raw) as DictData;
   } catch {
-    _cache = { words: [] };
+    _cache = { version: "", dictDate: "", words: [] };
   }
   return _cache;
 }
