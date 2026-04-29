@@ -127,6 +127,15 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* New Note button */}
+      <button
+        onClick={() => { setShowAdd(true); setEditId(null); }}
+        className="self-start px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+        style={{ background: "var(--accent)", color: "white" }}
+      >
+        + New Note
+      </button>
+
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
         {([
@@ -150,23 +159,24 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
         ))}
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center gap-3">
+      {/* Search */}
+      <div className="relative">
+        <svg
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          width="15" height="15" viewBox="0 0 24 24" fill="none"
+          stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
         <input
           type="text"
           placeholder="Search notes…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none jp-text"
+          className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none jp-text"
           style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
         />
-        <button
-          onClick={() => { setShowAdd(true); setEditId(null); }}
-          className="shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-          style={{ background: "var(--accent)", color: "white" }}
-        >
-          + New Note
-        </button>
       </div>
 
       {/* Add form */}
