@@ -15,9 +15,7 @@
 *.pem
 .env*.local
 
-# dictionary data (large files, generated)
-/data/jmdict.json
-/data/jlpt-map.json
+# dictionary data (generated/binary)
 /data/jdict.db
 /data/jdict.db-shm
 /data/jdict.db-wal

@@ -5,7 +5,8 @@ import { mkdirSync, existsSync } from "fs";
 import type { FavoriteItem } from "./favorites";
 import type { HistoryItem } from "./history";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// Vercel has a read-only filesystem except for /tmp
+const DATA_DIR = process.env.VERCEL ? "/tmp" : path.join(process.cwd(), "data");
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
 const db = new Database(path.join(DATA_DIR, "faya_dict.db"));

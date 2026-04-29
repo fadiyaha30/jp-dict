@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@mantine/core", "@mantine/hooks"],
   },
+  outputFileTracingIncludes: {
+    "/**": ["./data/jmdict.json", "./data/jlpt-map.json", "./data/grammar.json"],
+  },
   serverExternalPackages: ["better-sqlite3", "kuroshiro", "kuroshiro-analyzer-kuromoji", "kuromoji", "nodejs-whisper"],
   webpack: (config, { isServer }) => {
     if (!isServer) {
