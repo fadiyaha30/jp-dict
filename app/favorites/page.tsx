@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -24,6 +24,10 @@ function timeAgo(ts: number): string {
 type Tab = "words" | "grammar";
 
 export default function FavoritesPage() {
+  return <Suspense><FavoritesContent /></Suspense>;
+}
+
+function FavoritesContent() {
   const { data: session, status } = useSession();
   const isLoggedIn = !!session?.user;
   const router = useRouter();

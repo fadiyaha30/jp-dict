@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { auth } from "@/auth";
 import { getPersonalNotes } from "@/lib/db";
 import PersonalNotesList from "@/components/PersonalNotesList";
@@ -27,7 +28,7 @@ export default async function NotesPage({ searchParams }: PageProps) {
             Phrases and sentences you want to remember.
           </p>
         </div>
-        <PersonalNotesList initial={notes} initialTab={tab} />
+        <Suspense><PersonalNotesList initial={notes} initialTab={tab} /></Suspense>
       </div>
     </main>
   );
