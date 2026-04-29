@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 type KanaEntry = { kana: string; romaji: string } | null;
 type KanaRow = { group: string; cells: KanaEntry[] };
@@ -236,14 +236,6 @@ function StrokeModal({ entry, onClose }: { entry: KanaEntry; onClose: () => void
     });
   }, [entry]);
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
   if (!entry) return null;
 
   return (
@@ -253,14 +245,14 @@ function StrokeModal({ entry, onClose }: { entry: KanaEntry; onClose: () => void
     >
       <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.45)" }} />
       <div
-        className="relative rounded-2xl p-6 w-full max-w-sm flex flex-col gap-5"
+        className="relative rounded-2xl p-4 w-full max-w-xs flex flex-col gap-3"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col gap-1">
-            <span className="jp-text font-black" style={{ fontSize: "3rem", lineHeight: 1, color: "var(--text)" }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-3">
+            <span className="jp-text font-black" style={{ fontSize: "2rem", lineHeight: 1, color: "var(--text)" }}>
               {entry.kana}
             </span>
             <span className="text-sm font-mono tracking-wider" style={{ color: "var(--muted)" }}>
@@ -273,45 +265,40 @@ function StrokeModal({ entry, onClose }: { entry: KanaEntry; onClose: () => void
             style={{ color: "var(--muted)" }}
             aria-label="Close"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
         {/* Stroke diagrams */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
-            Stroke Order
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-5 h-5 rounded-full border-2 animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+          </div>
+        ) : svgs.length === 0 ? (
+          <p className="text-sm py-3 text-center" style={{ color: "var(--muted)" }}>
+            No stroke data available.
           </p>
-          {loading ? (
-            <div className="flex items-center justify-center py-10">
-              <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
-            </div>
-          ) : svgs.length === 0 ? (
-            <p className="text-sm py-4 text-center" style={{ color: "var(--muted)" }}>
-              No stroke data available.
-            </p>
-          ) : (
-            <div className="flex gap-4 flex-wrap">
-              {svgs.map(({ char, svg }) => (
-                <div key={char} className="flex flex-col items-center gap-2">
-                  {entry.kana.length > 1 && (
-                    <span className="jp-text text-sm font-medium" style={{ color: "var(--muted)" }}>{char}</span>
-                  )}
-                  <div
-                    className="rounded-xl p-2"
-                    style={{ width: 140, height: 140, background: "var(--subtle)", border: "1px solid var(--border)" }}
-                    dangerouslySetInnerHTML={{ __html: svg }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="flex gap-3 flex-wrap justify-center">
+            {svgs.map(({ char, svg }) => (
+              <div key={char} className="flex flex-col items-center gap-1.5">
+                {entry.kana.length > 1 && (
+                  <span className="jp-text text-xs font-medium" style={{ color: "var(--muted)" }}>{char}</span>
+                )}
+                <div
+                  className="rounded-xl overflow-hidden [&>svg]:block [&>svg]:w-full [&>svg]:h-full"
+                  style={{ width: 120, height: 120, background: "var(--subtle)", border: "1px solid var(--border)" }}
+                  dangerouslySetInnerHTML={{ __html: svg }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
-        <p className="text-[11px]" style={{ color: "var(--muted)" }}>
-          Numbers indicate stroke order. Write each stroke in sequence.
+        <p className="text-[10px] text-center" style={{ color: "var(--muted)" }}>
+          ← → ↑ ↓ to navigate · Esc to close
         </p>
       </div>
     </div>
@@ -331,6 +318,66 @@ export default function KanaClient() {
   const main = isHira ? MAIN_H : MAIN_K;
   const daku = isHira ? DAKU_H : DAKU_K;
   const combo = isHira ? COMBO_H : COMBO_K;
+
+  // 2-D grid of all cells (nulls preserved for position tracking)
+  const grid = useMemo((): KanaEntry[][] => {
+    const rows: KanaEntry[][] = [];
+    for (const row of main) rows.push([...row.cells]);
+    for (const row of daku) rows.push([...row.cells]);
+    for (const row of combo) rows.push([row.ya, row.yu, row.yo]);
+    return rows;
+  }, [main, daku, combo]);
+
+  // Keyboard navigation when modal is open
+  useEffect(() => {
+    if (!selected) return;
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") { setSelected(null); return; }
+
+      const dir = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down" }[e.key];
+      if (!dir) return;
+      e.preventDefault();
+
+      // Locate current position
+      let r = -1, c = -1;
+      outer: for (let ri = 0; ri < grid.length; ri++) {
+        for (let ci = 0; ci < grid[ri].length; ci++) {
+          if (grid[ri][ci]?.kana === selected!.kana) { r = ri; c = ci; break outer; }
+        }
+      }
+      if (r === -1) return;
+
+      if (dir === "left" || dir === "right") {
+        const step = dir === "left" ? -1 : 1;
+        let nr = r, nc = c + step;
+        while (nr >= 0 && nr < grid.length) {
+          while (nc >= 0 && nc < grid[nr].length) {
+            if (grid[nr][nc]) { setSelected(grid[nr][nc]); return; }
+            nc += step;
+          }
+          nr += step;
+          if (nr >= 0 && nr < grid.length) nc = step === 1 ? 0 : grid[nr].length - 1;
+        }
+      } else {
+        const step = dir === "up" ? -1 : 1;
+        let nr = r + step;
+        while (nr >= 0 && nr < grid.length) {
+          const nc = Math.min(c, grid[nr].length - 1);
+          if (grid[nr][nc]) { setSelected(grid[nr][nc]); return; }
+          // cell is null — search outward in same row
+          for (let d = 1; d < grid[nr].length; d++) {
+            if (nc - d >= 0 && grid[nr][nc - d]) { setSelected(grid[nr][nc - d]); return; }
+            if (nc + d < grid[nr].length && grid[nr][nc + d]) { setSelected(grid[nr][nc + d]); return; }
+          }
+          nr += step;
+        }
+      }
+    }
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected, grid]);
 
   const handleSelect = useCallback((entry: KanaEntry) => setSelected(entry), []);
   const handleClose = useCallback(() => setSelected(null), []);
