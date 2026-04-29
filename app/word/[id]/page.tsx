@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import WordHistoryTracker from "@/components/WordHistoryTracker";
 import FavoriteButton from "@/components/FavoriteButton";
+import VoiceButton from "@/components/VoiceButton";
 import WordPageTabs from "@/components/WordPageTabs";
 import { getWordDetail } from "@/lib/dictionary";
 import { fetchExamples } from "@/lib/tatoeba";
@@ -167,18 +168,21 @@ export default async function WordPage({ params, searchParams }: WordPageProps) 
             )}
           </div>
 
-          <FavoriteButton
-            size="md"
-            item={{
-              id: result.id,
-              kanji: result.kanji,
-              reading: result.reading,
-              romaji: result.romaji,
-              meaning: result.meanings[0] ?? "",
-              partOfSpeech: result.partOfSpeech,
-              jlpt: result.jlpt,
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <VoiceButton text={result.kanji} reading={result.reading} />
+            <FavoriteButton
+              size="md"
+              item={{
+                id: result.id,
+                kanji: result.kanji,
+                reading: result.reading,
+                romaji: result.romaji,
+                meaning: result.meanings[0] ?? "",
+                partOfSpeech: result.partOfSpeech,
+                jlpt: result.jlpt,
+              }}
+            />
+          </div>
         </div>
       </div>
 
