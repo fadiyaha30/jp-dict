@@ -12,11 +12,11 @@ const JLPT_COLORS: Record<string, string> = {
 function timeAgo(ts: number): string {
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return "たった今";
+  if (mins < 60) return `${mins}分前`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  if (hrs < 24) return `${hrs}時間前`;
+  return `${Math.floor(hrs / 24)}日前`;
 }
 
 export default function FavoritesPage() {
@@ -46,26 +46,26 @@ export default function FavoritesPage() {
     <main className="max-w-6xl mx-auto px-4 py-8 w-full">
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>Favorites</h1>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>お気に入り</h1>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            {items.length} saved word{items.length !== 1 ? "s" : ""} ·{" "}
-            {isLoggedIn ? "synced to your account" : "stored locally"}
+            {items.length}単語保存済み ·{" "}
+            {isLoggedIn ? "アカウントと同期済み" : "ローカル保存"}
           </p>
         </div>
 
         {items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-20">
             <p className="text-4xl">⭐</p>
-            <p className="font-semibold" style={{ color: "var(--text)" }}>No favorites yet</p>
+            <p className="font-semibold" style={{ color: "var(--text)" }}>お気に入りがありません</p>
             <p className="text-sm text-center" style={{ color: "var(--muted)", maxWidth: "20rem" }}>
-              Star words on search results or word pages to save them here.
+              検索結果や単語ページで☆を押してここに保存できます。
             </p>
             <Link
               href="/"
               className="mt-2 px-5 py-2 rounded-xl text-sm font-medium"
               style={{ background: "var(--accent)", color: "white" }}
             >
-              Start searching
+              検索する
             </Link>
           </div>
         ) : (
@@ -105,7 +105,7 @@ export default function FavoritesPage() {
                 </div>
                 <div style={{ height: "1px", background: "var(--border)" }} />
                 <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{item.meaning}</p>
-                <p className="text-xs" style={{ color: "#c0b8ae" }}>Saved {timeAgo(item.savedAt)}</p>
+                <p className="text-xs" style={{ color: "#c0b8ae" }}>{timeAgo(item.savedAt)}に保存</p>
               </div>
             ))}
           </div>

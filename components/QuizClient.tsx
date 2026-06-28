@@ -212,11 +212,11 @@ function HomeView({ pool, onPickMode }: { pool: QuizWord[]; onPickMode: (m: Mode
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>Quiz</h1>
+        <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>クイズ</h1>
         <p className="text-sm" style={{ color: "var(--muted)" }}>
-          Practice words from your history ·{" "}
+          履歴の単語を練習 ·{" "}
           <span style={{ color: "var(--accent)", fontWeight: 600 }}>
-            {pool.length} word{pool.length !== 1 ? "s" : ""} available
+            {pool.length}単語
           </span>
         </p>
       </div>
@@ -224,33 +224,33 @@ function HomeView({ pool, onPickMode }: { pool: QuizWord[]; onPickMode: (m: Mode
       {pool.length < 2 ? (
         <div className="flex flex-col items-center gap-4 py-16">
           <p className="text-4xl">📚</p>
-          <p className="font-semibold" style={{ color: "var(--text)" }}>Not enough words yet</p>
+          <p className="font-semibold" style={{ color: "var(--text)" }}>単語が足りません</p>
           <p className="text-sm text-center" style={{ color: "var(--muted)" }}>
-            Look up at least 2 words first — they&apos;ll appear here as practice material.
+            まず2つ以上の単語を調べてください。練習問題として表示されます。
           </p>
           <Link
             href="/"
             className="mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
             style={{ background: "var(--accent)", color: "white" }}
           >
-            Start searching
+            検索する
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <ModeCard
             emoji="🃏"
-            title="Flip Cards"
-            description="See the word, flip to reveal its reading and meaning. Mark yourself honest."
+            title="フラッシュカード"
+            description="単語を見てカードを裏返し、読み方と意味を確認しましょう。"
             available
             onClick={() => onPickMode("flip")}
           />
           <ModeCard
             emoji="🔤"
-            title="Multiple Choice"
-            description="Pick the correct meaning from 4 options. Instant right or wrong feedback."
+            title="多択問題"
+            description="4択から正しい意味を選んでください。"
             available={pool.length >= 4}
-            unavailableMsg={`Need at least 4 words (you have ${pool.length})`}
+            unavailableMsg={`4単語以上必要です（現在${pool.length}単語）`}
             onClick={() => onPickMode("mc")}
           />
         </div>
@@ -290,7 +290,7 @@ function ModeCard({
           className="self-start text-xs font-semibold px-3 py-1.5 rounded-lg mt-auto"
           style={{ background: "var(--accent-pale)", color: "var(--accent)" }}
         >
-          Select →
+          選択 →
         </span>
       )}
     </button>
@@ -332,26 +332,26 @@ function SetupView({
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
           </svg>
-          Back
+          戻る
         </button>
         <h2 className="text-xl font-bold" style={{ color: "var(--text)" }}>
-          {mode === "flip" ? "🃏 Flip Cards" : "🔤 Multiple Choice"}
+          {mode === "flip" ? "🃏 フラッシュカード" : "🔤 多択問題"}
         </h2>
-        <p className="text-sm" style={{ color: "var(--muted)" }}>How many questions?</p>
+        <p className="text-sm" style={{ color: "var(--muted)" }}>問題数は？</p>
       </div>
 
       {/* Source toggle */}
       <div className="flex flex-col gap-2">
         <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-          Word source
+          単語のソース
         </p>
         <div
           className="flex rounded-xl overflow-hidden gap-px self-start w-full"
           style={{ background: "var(--border)", border: "1px solid var(--border)" }}
         >
           {([
-            { key: "history", label: `History (${histPool.length})` },
-            { key: "favorites", label: `Favorites (${favPool.length})` },
+            { key: "history", label: `履歴（${histPool.length}）` },
+            { key: "favorites", label: `お気に入り（${favPool.length}）` },
           ] as { key: Source; label: string }[]).map(({ key, label }) => (
             <button
               key={key}
@@ -369,7 +369,7 @@ function SetupView({
           ))}
         </div>
         {source === "favorites" && favPool.length === 0 && (
-          <p className="text-xs" style={{ color: "#dc2626" }}>No favorites yet — save some words first.</p>
+          <p className="text-xs" style={{ color: "#dc2626" }}>お気に入りがありません — 先に単語を保存してください。</p>
         )}
       </div>
 
@@ -413,7 +413,7 @@ function SetupView({
           </button>
         </div>
         <p className="text-xs" style={{ color: "var(--muted)" }}>
-          max {pool.length} (your word history)
+          最大{pool.length}（単語履歴より）
         </p>
       </div>
 
@@ -424,7 +424,7 @@ function SetupView({
         className="w-full py-4 rounded-2xl font-bold text-base disabled:opacity-40"
         style={{ background: "var(--accent)", color: "white" }}
       >
-        Start {clamped} question{clamped !== 1 ? "s" : ""}
+        {clamped}問スタート
       </button>
     </div>
   );
@@ -488,7 +488,7 @@ function FlipView({
             >
               {word.kanji}
             </p>
-            <p className="text-xs" style={{ color: "var(--muted)" }}>tap to flip</p>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>タップして裏返す</p>
           </div>
 
           {/* Back */}
@@ -520,14 +520,14 @@ function FlipView({
           className="flex-1 py-3 rounded-xl font-semibold text-sm"
           style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
         >
-          ✗ Miss
+          ✗ 不正解
         </button>
         <button
           onClick={onGotIt}
           className="flex-1 py-3 rounded-xl font-semibold text-sm"
           style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}
         >
-          ✓ Got it
+          ✓ 正解
         </button>
       </div>
     </div>
@@ -602,7 +602,7 @@ function MCView({
           className="self-end px-6 py-2.5 rounded-xl text-sm font-semibold"
           style={{ background: "var(--accent)", color: "white" }}
         >
-          Next →
+          次へ →
         </button>
       )}
     </div>
@@ -626,17 +626,17 @@ function ResultView({
   const pct = Math.round((correct / total) * 100);
   const scoreColor = pct >= 80 ? "#16a34a" : pct >= 50 ? "#d97706" : "#dc2626";
   const message =
-    pct === 100 ? "Perfect! 🎉" :
-    pct >= 80 ? "Great job!" :
-    pct >= 50 ? "Keep it up!" :
-    "More practice needed.";
+    pct === 100 ? "完璧！ 🎉" :
+    pct >= 80 ? "よくできました！" :
+    pct >= 50 ? "その調子！" :
+    "もっと練習が必要です。";
 
   return (
     <div className="flex flex-col items-center gap-8 py-8">
       <div className="flex flex-col items-center gap-2 text-center">
         <p className="text-5xl font-black" style={{ color: scoreColor }}>{pct}%</p>
         <p className="text-lg font-semibold" style={{ color: "var(--text)" }}>{message}</p>
-        <p className="text-sm" style={{ color: "var(--muted)" }}>{correct} out of {total} correct</p>
+        <p className="text-sm" style={{ color: "var(--muted)" }}>{total}問中{correct}問正解</p>
       </div>
 
       <div
@@ -648,14 +648,14 @@ function ResultView({
           className="w-full py-3 rounded-xl text-sm font-semibold"
           style={{ background: "var(--accent)", color: "white" }}
         >
-          Try again
+          もう一度
         </button>
         <button
           onClick={onChangeSettings}
           className="w-full py-3 rounded-xl text-sm font-medium"
           style={{ background: "var(--subtle)", color: "var(--text)", border: "1px solid var(--border)" }}
         >
-          Change questions
+          問題を変える
         </button>
         {canSwitch && (
           <button
@@ -663,7 +663,7 @@ function ResultView({
             className="w-full py-3 rounded-xl text-sm font-medium"
             style={{ background: "var(--subtle)", color: "var(--text)", border: "1px solid var(--border)" }}
           >
-            Switch to {mode === "flip" ? "Multiple Choice" : "Flip Cards"}
+            {mode === "flip" ? "多択問題" : "フラッシュカード"}に切り替え
           </button>
         )}
         <button
@@ -671,7 +671,7 @@ function ResultView({
           className="w-full py-3 rounded-xl text-sm"
           style={{ color: "var(--muted)", background: "none", border: "none" }}
         >
-          ← Back to quiz home
+          ← クイズに戻る
         </button>
       </div>
     </div>

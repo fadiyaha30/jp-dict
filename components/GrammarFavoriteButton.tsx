@@ -40,14 +40,14 @@ export default function GrammarFavoriteButton({ grammarId, pattern, meaning, jlp
   if (!isLoggedIn) return null;
 
   return (
-    <Tooltip label={favorited ? "Remove from favorites" : "Add to favorites"} withArrow>
+    <Tooltip label={favorited ? "お気に入りから削除" : "お気に入りに追加"} withArrow>
       <ActionIcon
         variant={favorited ? "filled" : "subtle"}
         color={favorited ? "yellow" : "gray"}
         size={size}
         radius="xl"
         onClick={handleClick}
-        aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+        aria-label={favorited ? "お気に入りから削除" : "お気に入りに追加"}
       >
         <svg
           width="16"

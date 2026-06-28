@@ -76,7 +76,7 @@ export default function SearchBar({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search in English or Japanese…"
+            placeholder="日本語か英語で検索…"
             disabled={isPending}
             className={`flex-1 bg-transparent border-none outline-none jp-text ${isLg ? "text-base" : "text-sm"}`}
             style={{ color: "var(--text)" }}
@@ -87,7 +87,7 @@ export default function SearchBar({
             className="shrink-0 px-3 py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40 min-h-[44px]"
             style={{ background: "var(--accent)", color: "white" }}
           >
-            {isPending ? "…" : "Search"}
+            {isPending ? "…" : "検索"}
           </button>
         </div>
       </form>
@@ -109,7 +109,7 @@ export default function SearchBar({
                   : { background: "var(--subtle)", color: "var(--muted)" }
               }
             >
-              {m === "auto" ? "Auto" : m === "en" ? "EN → JP" : "JP → EN"}
+              {m === "auto" ? "自動" : m === "en" ? "英→日" : "日→英"}
             </button>
           ))}
         </div>

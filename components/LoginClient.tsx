@@ -27,7 +27,7 @@ export default function LoginClient() {
     startTransition(async () => {
       const result = await signIn("credentials", { username, password, redirect: false });
       if (result?.error) {
-        setError("Invalid username or password.");
+        setError("ユーザー名またはパスワードが正しくありません。");
       } else {
         const favorites = getFavorites();
         const history = getHistory();
@@ -50,8 +50,8 @@ export default function LoginClient() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-1 mb-8 text-center">
           <span className="jp-text text-3xl font-black" style={{ color: "var(--accent)" }}>辞</span>
-          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>Welcome back</h1>
-          <p className="text-sm" style={{ color: "var(--muted)" }}>Sign in to your ファヤの辞書 account</p>
+          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>おかえりなさい</h1>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>ファヤの辞書にログイン</p>
         </div>
 
         <div
@@ -69,12 +69,12 @@ export default function LoginClient() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className={field.label} style={{ color: "var(--muted)" }}>Username</label>
+              <label className={field.label} style={{ color: "var(--muted)" }}>ユーザー名</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="your_username"
+                placeholder="ユーザー名を入力"
                 required
                 autoFocus
                 autoComplete="username"
@@ -86,7 +86,7 @@ export default function LoginClient() {
             </div>
 
             <div>
-              <label className={field.label} style={{ color: "var(--muted)" }}>Password</label>
+              <label className={field.label} style={{ color: "var(--muted)" }}>パスワード</label>
               <input
                 type="password"
                 value={password}
@@ -107,15 +107,15 @@ export default function LoginClient() {
               className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 mt-1"
               style={{ background: "var(--accent)", color: "white" }}
             >
-              {isPending ? "Signing in…" : "Sign in"}
+              {isPending ? "ログイン中…" : "ログイン"}
             </button>
           </form>
         </div>
 
         <p className="text-sm text-center mt-5" style={{ color: "var(--muted)" }}>
-          Don&apos;t have an account?{" "}
+          アカウントをお持ちでないですか？{" "}
           <Link href="/register" style={{ color: "var(--accent)" }} className="font-medium hover:underline">
-            Create one
+            新規登録
           </Link>
         </p>
       </div>

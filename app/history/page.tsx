@@ -8,11 +8,11 @@ import { getHistory, clearHistory, removeItem, type HistoryItem } from "@/lib/hi
 function timeAgo(ts: number): string {
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return "たった今";
+  if (mins < 60) return `${mins}分前`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  if (hrs < 24) return `${hrs}時間前`;
+  return `${Math.floor(hrs / 24)}日前`;
 }
 
 export default function HistoryPage() {
@@ -51,9 +51,9 @@ export default function HistoryPage() {
       <div className="flex flex-col gap-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>History</h1>
+            <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>履歴</h1>
             <p className="text-sm" style={{ color: "var(--muted)" }}>
-              Recent views &amp; searches · {isLoggedIn ? "synced" : "stored locally"}
+              閲覧・検索履歴 · {isLoggedIn ? "同期済み" : "ローカル保存"}
             </p>
           </div>
           {items.length > 0 && (
@@ -62,7 +62,7 @@ export default function HistoryPage() {
               className="text-xs px-3 py-1.5 rounded-lg transition-all"
               style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
             >
-              Clear all
+              すべて削除
             </button>
           )}
         </div>
@@ -84,7 +84,7 @@ export default function HistoryPage() {
                       : { background: "var(--subtle)", color: "var(--muted)" }
                   }
                 >
-                  {f === "all" ? "All" : f === "word" ? "Words" : "Searches"}
+                  {f === "all" ? "すべて" : f === "word" ? "単語" : "検索"}
                 </button>
               ))}
             </div>
@@ -94,16 +94,16 @@ export default function HistoryPage() {
         {items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-20">
             <p className="text-4xl">📖</p>
-            <p className="font-semibold" style={{ color: "var(--text)" }}>No history yet</p>
-            <p className="text-sm" style={{ color: "var(--muted)" }}>Words you view and searches you make will appear here.</p>
+            <p className="font-semibold" style={{ color: "var(--text)" }}>履歴がありません</p>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>見た単語や検索履歴がここに表示されます。</p>
             <Link href="/" className="mt-2 px-5 py-2 rounded-xl text-sm font-medium" style={{ background: "var(--accent)", color: "white" }}>
-              Start searching
+              検索する
             </Link>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16">
             <p className="text-sm" style={{ color: "var(--muted)" }}>
-              No {filter === "word" ? "word views" : "searches"} in history.
+              {filter === "word" ? "単語の閲覧履歴がありません。" : "検索履歴がありません。"}
             </p>
           </div>
         ) : (
@@ -120,7 +120,7 @@ export default function HistoryPage() {
                       className="text-xs px-2 py-0.5 rounded-md font-medium shrink-0"
                       style={{ background: "var(--accent-pale)", color: "var(--accent)" }}
                     >
-                      Word
+                      単語
                     </span>
                     <span className="jp-text font-semibold truncate" style={{ color: "var(--text)" }}>{item.kanji}</span>
                     {item.reading && item.reading !== item.kanji && (
@@ -134,7 +134,7 @@ export default function HistoryPage() {
                       className="text-xs px-2 py-0.5 rounded-md font-medium shrink-0"
                       style={{ background: "#f1f0ff", color: "#6366f1" }}
                     >
-                      Search
+                      検索
                     </span>
                     <span className="truncate" style={{ color: "var(--text)" }}>&ldquo;{item.query}&rdquo;</span>
                     <span className="text-xs shrink-0" style={{ color: "var(--muted)" }}>{item.mode}</span>

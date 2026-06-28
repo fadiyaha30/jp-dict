@@ -55,7 +55,7 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
         </svg>
-        Grammar
+        文法
       </Link>
 
       {/* Header card */}
@@ -116,7 +116,7 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
       {/* Examples */}
       <section className="mb-6">
         <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
-          Examples
+          例文
         </h2>
         <div className="flex flex-col gap-3">
           {examplesWithFurigana.map((ex, i) => (
@@ -138,7 +138,7 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
       {g.notes && (
         <section className="mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
-            Notes
+            説明
           </h2>
           <div className="rounded-xl p-4 text-sm leading-relaxed"
             style={{ background: color + "08", border: `1px solid ${color}22`, color: "var(--text)" }}>
@@ -151,7 +151,7 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
       {g.related && g.related.length > 0 && (
         <section className="mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
-            Related Patterns
+            関連パターン
           </h2>
           <div className="flex gap-2 flex-wrap">
             {g.related.map((relId) => {
@@ -172,7 +172,7 @@ export default async function GrammarDetailPage({ params, searchParams }: PagePr
       {/* Personal notes */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
-          My Notes
+          メモ
         </h2>
         <GrammarUserNotes grammarId={g.id} grammarPattern={g.pattern} />
       </section>

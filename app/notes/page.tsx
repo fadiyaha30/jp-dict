@@ -22,10 +22,10 @@ export default async function NotesPage({ searchParams }: PageProps) {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
-            Personal Notes
+            個人メモ
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
-            Phrases and sentences you want to remember.
+            覚えておきたいフレーズや文
           </p>
         </div>
         <Suspense><PersonalNotesList initial={notes} initialTab={tab} /></Suspense>

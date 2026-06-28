@@ -51,8 +51,8 @@ export default function VoiceButton({ text, reading }: VoiceButtonProps) {
   return (
     <button
       onClick={speak}
-      aria-label={speaking ? "Stop" : "Listen to pronunciation"}
-      title={speaking ? "Stop" : "Listen to pronunciation"}
+      aria-label={speaking ? "停止" : "発音を聞く"}
+      title={speaking ? "停止" : "発音を聞く"}
       className="flex items-center justify-center rounded-full transition-all"
       style={{
         width: 40,

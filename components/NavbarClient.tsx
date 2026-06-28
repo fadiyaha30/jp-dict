@@ -6,13 +6,13 @@ import { signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 
 const NAV_LINKS = [
-  { href: "/grammar", label: "Grammar" },
-  { href: "/kana", label: "Kana" },
-  { href: "/record", label: "Record" },
-  { href: "/favorites", label: "Favorites" },
-  { href: "/history", label: "History" },
-  { href: "/notes", label: "Notes" },
-  { href: "/quiz", label: "Quiz" },
+  { href: "/grammar", label: "文法" },
+  { href: "/kana", label: "かな" },
+  { href: "/record", label: "録音" },
+  { href: "/favorites", label: "お気に入り" },
+  { href: "/history", label: "履歴" },
+  { href: "/notes", label: "メモ" },
+  { href: "/quiz", label: "クイズ" },
 ];
 
 export default function NavbarClient({ username }: { username: string | null }) {
@@ -122,7 +122,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
                     onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
                   >
-                    Sign out
+                    ログアウト
                   </button>
                 </div>
               )}
@@ -134,14 +134,14 @@ export default function NavbarClient({ username }: { username: string | null }) 
                 className="text-sm transition-colors"
                 style={{ color: isActive("/login") ? "var(--accent)" : "var(--muted)" }}
               >
-                Sign in
+                ログイン
               </Link>
               <Link
                 href="/register"
                 className="text-sm px-4 py-1.5 rounded-full font-medium transition-all hover:opacity-90"
                 style={{ background: "var(--accent)", color: "white" }}
               >
-                Register
+                登録
               </Link>
             </div>
           )}
@@ -201,7 +201,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
                 className="text-sm text-left transition-colors"
                 style={{ color: "var(--muted)", background: "none", border: "none", padding: 0 }}
               >
-                Sign out
+                ログアウト
               </button>
             ) : (
               <>
@@ -210,14 +210,14 @@ export default function NavbarClient({ username }: { username: string | null }) 
                   className="text-sm font-medium transition-colors"
                   style={{ color: isActive("/login") ? "var(--accent)" : "var(--text)" }}
                 >
-                  Sign in
+                  ログイン
                 </Link>
                 <Link
                   href="/register"
                   className="text-sm px-4 py-2 rounded-full font-medium text-center transition-all hover:opacity-90"
                   style={{ background: "var(--accent)", color: "white" }}
                 >
-                  Register
+                  登録
                 </Link>
               </>
             )}

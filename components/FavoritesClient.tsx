@@ -14,11 +14,11 @@ const JLPT_COLORS: Record<string, string> = {
 function timeAgo(ts: number): string {
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return "たった今";
+  if (mins < 60) return `${mins}分前`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  if (hrs < 24) return `${hrs}時間前`;
+  return `${Math.floor(hrs / 24)}日前`;
 }
 
 type Tab = "words" | "grammar";
@@ -76,17 +76,17 @@ export default function FavoritesClient() {
     <main className="max-w-6xl mx-auto px-4 py-8 w-full">
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>Favorites</h1>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>お気に入り</h1>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            {isLoggedIn ? "Synced to your account." : "Stored locally."}
+            {isLoggedIn ? "アカウントと同期済み" : "ローカル保存"}
           </p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-2">
           {([
-            ["words", "Words", wordItems.length],
-            ["grammar", "Grammar", grammarItems.length],
+            ["words", "単語", wordItems.length],
+            ["grammar", "文法", grammarItems.length],
           ] as [Tab, string, number][]).map(([t, label, count]) => (
             <button
               key={t}
@@ -109,9 +109,9 @@ export default function FavoritesClient() {
           wordItems.length === 0 ? (
             <EmptyState
               emoji="⭐"
-              title="No favorite words yet"
-              description="Star words on search results or word pages to save them here."
-              cta={{ label: "Start searching", href: "/" }}
+              title="お気に入りの単語がありません"
+              description="検索結果や単語ページで☆を押して保存できます。"
+              cta={{ label: "検索する", href: "/" }}
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -148,7 +148,7 @@ export default function FavoritesClient() {
                   </div>
                   <div style={{ height: "1px", background: "var(--border)" }} />
                   <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{item.meaning}</p>
-                  <p className="text-xs" style={{ color: "#c0b8ae" }}>Saved {timeAgo(item.savedAt)}</p>
+                  <p className="text-xs" style={{ color: "#c0b8ae" }}>{timeAgo(item.savedAt)}に保存</p>
                 </div>
               ))}
             </div>
@@ -160,16 +160,16 @@ export default function FavoritesClient() {
           !isLoggedIn ? (
             <EmptyState
               emoji="文"
-              title="Sign in to save grammar"
-              description="Grammar favorites require an account."
-              cta={{ label: "Sign in", href: "/login" }}
+              title="ログインして文法を保存"
+              description="文法のお気に入りにはアカウントが必要です。"
+              cta={{ label: "ログイン", href: "/login" }}
             />
           ) : grammarItems.length === 0 ? (
             <EmptyState
               emoji="文"
-              title="No favorite grammar points yet"
-              description="Star grammar points on their detail pages to save them here."
-              cta={{ label: "Browse grammar", href: "/grammar" }}
+              title="お気に入りの文法がありません"
+              description="文法詳細ページで☆を押して保存できます。"
+              cta={{ label: "文法を見る", href: "/grammar" }}
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -203,7 +203,7 @@ export default function FavoritesClient() {
                     </div>
                     <div style={{ height: "1px", background: "var(--border)" }} />
                     <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{item.meaning}</p>
-                    <p className="text-xs" style={{ color: "#c0b8ae" }}>Saved {timeAgo(item.saved_at)}</p>
+                    <p className="text-xs" style={{ color: "#c0b8ae" }}>{timeAgo(item.saved_at)}に保存</p>
                   </div>
                 );
               })}

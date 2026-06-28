@@ -133,15 +133,15 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
         className="self-start px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
         style={{ background: "var(--accent)", color: "white" }}
       >
-        + New Note
+        ＋ 新規メモ
       </button>
 
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
         {([
-          ["all", "All", notes.length],
-          ["words", "Words", wordCount],
-          ["grammar", "Grammar", grammarCount],
+          ["all", "すべて", notes.length],
+          ["words", "単語", wordCount],
+          ["grammar", "文法", grammarCount],
         ] as [Tab, string, number][]).map(([t, label, count]) => (
           <button
             key={t}
@@ -171,7 +171,7 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
         </svg>
         <input
           type="text"
-          placeholder="Search notes…"
+          placeholder="メモを検索…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none jp-text"
@@ -187,7 +187,7 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
           onSave={handleAdd}
           onCancel={() => { setShowAdd(false); setAddForm(emptyForm()); }}
           saving={saving}
-          title="New Note"
+          title="新しいメモ"
         />
       )}
 
@@ -196,16 +196,16 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
         <div className="flex flex-col items-center gap-3 py-16">
           <p className="text-3xl">📝</p>
           <p className="font-semibold" style={{ color: "var(--text)" }}>
-            {search ? "No matching notes" : "No notes yet"}
+            {search ? "一致するメモがありません" : "まだメモがありません"}
           </p>
           <p className="text-sm text-center" style={{ color: "var(--muted)" }}>
             {search
-              ? "Try a different search term."
+              ? "別のキーワードで検索してください。"
               : tab === "grammar"
-              ? "Open a grammar point and add a note there."
+              ? "文法ポイントを開いてメモを追加してください。"
               : tab === "words"
-              ? "Open a word and add a note there."
-              : "Jot down phrases you hear and want to remember."}
+              ? "単語ページを開いてメモを追加してください。"
+              : "聞いて覚えたいフレーズを書き留めましょう。"}
           </p>
         </div>
       )}
@@ -221,7 +221,7 @@ export default function PersonalNotesList({ initial, initialTab }: Props) {
               onSave={handleEdit}
               onCancel={() => setEditId(null)}
               saving={saving}
-              title="Edit Note"
+              title="メモを編集"
             />
           ) : (
             <NoteCard key={note.id} note={note} onEdit={startEdit} onDelete={handleDelete} />
@@ -287,20 +287,20 @@ function NoteCard({
         <div className="flex items-center gap-2">
           {confirmDelete ? (
             <>
-              <span className="text-xs" style={{ color: "var(--muted)" }}>Delete?</span>
+              <span className="text-xs" style={{ color: "var(--muted)" }}>削除しますか？</span>
               <button
                 onClick={() => onDelete(note.id)}
                 className="text-xs px-2.5 py-1 rounded-lg font-medium"
                 style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
               >
-                Yes
+                はい
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}
                 className="text-xs px-2.5 py-1 rounded-lg"
                 style={{ background: "var(--subtle)", color: "var(--muted)" }}
               >
-                No
+                いいえ
               </button>
             </>
           ) : (
@@ -310,14 +310,14 @@ function NoteCard({
                 className="text-xs px-2.5 py-1 rounded-lg transition-colors"
                 style={{ background: "var(--subtle)", color: "var(--muted)" }}
               >
-                Edit
+                編集
               </button>
               <button
                 onClick={() => setConfirmDelete(true)}
                 className="text-xs px-2.5 py-1 rounded-lg transition-colors"
                 style={{ background: "var(--subtle)", color: "var(--muted)" }}
               >
-                Delete
+                削除
               </button>
             </>
           )}
@@ -351,7 +351,7 @@ function NoteFormCard({
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-            Phrase / Sentence <span style={{ color: "#ef4444" }}>*</span>
+            フレーズ・文 <span style={{ color: "#ef4444" }}>*</span>
           </label>
           <textarea
             rows={2}
@@ -365,12 +365,12 @@ function NoteFormCard({
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>Meaning / Translation</label>
+          <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>意味・訳</label>
           <input
             type="text"
             value={form.meaning}
             onChange={(e) => onChange({ ...form, meaning: e.target.value })}
-            placeholder="e.g. Good work today"
+            placeholder="例：お疲れ様でした"
             className="rounded-xl px-4 py-2.5 text-sm outline-none"
             style={{ background: "var(--subtle)", border: "1px solid var(--border)", color: "var(--text)" }}
             onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
@@ -379,13 +379,13 @@ function NoteFormCard({
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-            Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+            状況 <span style={{ color: "var(--muted)", fontWeight: 400 }}>（任意）</span>
           </label>
           <input
             type="text"
             value={form.context}
             onChange={(e) => onChange({ ...form, context: e.target.value })}
-            placeholder="e.g. Overheard at the office, from anime, etc."
+            placeholder="例：職場で聞いた、アニメより等"
             className="rounded-xl px-4 py-2.5 text-sm outline-none"
             style={{ background: "var(--subtle)", border: "1px solid var(--border)", color: "var(--text)" }}
             onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
@@ -394,13 +394,13 @@ function NoteFormCard({
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-            Additional Notes <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+            追記 <span style={{ color: "var(--muted)", fontWeight: 400 }}>（任意）</span>
           </label>
           <textarea
             rows={2}
             value={form.additional_notes}
             onChange={(e) => onChange({ ...form, additional_notes: e.target.value })}
-            placeholder="Extra notes, mnemonics, usage tips…"
+            placeholder="補足・覚え方・使い方…"
             className="rounded-xl px-4 py-2.5 text-sm resize-none outline-none"
             style={{ background: "var(--subtle)", border: "1px solid var(--border)", color: "var(--text)" }}
             onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
@@ -414,7 +414,7 @@ function NoteFormCard({
           className="px-4 py-2 rounded-xl text-sm"
           style={{ background: "var(--subtle)", color: "var(--muted)" }}
         >
-          Cancel
+          キャンセル
         </button>
         <button
           onClick={onSave}
@@ -422,7 +422,7 @@ function NoteFormCard({
           className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
           style={{ background: "var(--accent)", color: "white" }}
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? "保存中…" : "保存"}
         </button>
       </div>
     </div>

@@ -6,10 +6,10 @@ import Link from "next/link";
 type ExtractedWord = { word: string; reading: string; pos: string; meanings: string[] };
 
 const POS_LABEL: Record<string, string> = {
-  名詞: "noun",
-  動詞: "verb",
-  形容詞: "adj",
-  副詞: "adverb",
+  名詞: "名詞",
+  動詞: "動詞",
+  形容詞: "形容詞",
+  副詞: "副詞",
 };
 
 type Status = "idle" | "recording" | "transcribing" | "extracting";
@@ -33,7 +33,7 @@ export default function RecorderClient() {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      setError("Microphone access denied. Please allow microphone access and try again.");
+      setError("マイクへのアクセスが拒否されました。許可してからもう一度お試しください。");
       return;
     }
 
@@ -78,7 +78,7 @@ export default function RecorderClient() {
     }
 
     if (!text.trim()) {
-      setError("No speech detected in the recording.");
+      setError("録音中に音声が検出されませんでした。");
       setStatus("idle");
       return;
     }
@@ -113,10 +113,10 @@ export default function RecorderClient() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
-          Conversation Recorder
+          会話レコーダー
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
-          Record spoken Japanese and extract key vocabulary automatically.
+          日本語の会話を録音して語彙を自動抽出します。
         </p>
       </div>
 
@@ -130,7 +130,7 @@ export default function RecorderClient() {
               style={{ background: "var(--accent)", color: "white" }}
             >
               <span className="w-2 h-2 rounded-full bg-white inline-block" />
-              Start Recording
+              録音開始
             </button>
           )}
 
@@ -141,7 +141,7 @@ export default function RecorderClient() {
               style={{ background: "#ef4444", color: "white" }}
             >
               <span className="w-2 h-2 rounded-full bg-white inline-block" style={{ animation: "blink 1s infinite" }} />
-              Stop Recording
+              録音停止
             </button>
           )}
 
@@ -151,13 +151,13 @@ export default function RecorderClient() {
               style={{ background: "var(--subtle)", color: "var(--muted)", border: "1px solid var(--border)" }}
             >
               <span className="w-2 h-2 rounded-full inline-block" style={{ background: "var(--accent)", animation: "blink 1s infinite" }} />
-              {status === "transcribing" ? "Transcribing…" : "Extracting words…"}
+              {status === "transcribing" ? "文字起こし中…" : "単語抽出中…"}
             </div>
           )}
 
           {isRecording && (
             <span className="text-sm font-medium" style={{ color: "#ef4444" }}>
-              Listening…
+              収音中…
             </span>
           )}
 
@@ -167,7 +167,7 @@ export default function RecorderClient() {
               className="ml-auto text-xs px-3 py-1.5 rounded-full transition-all"
               style={{ border: "1px solid var(--border)", color: "var(--muted)", background: "var(--subtle)" }}
             >
-              Clear
+              クリア
             </button>
           )}
         </div>
@@ -183,7 +183,7 @@ export default function RecorderClient() {
         ) : (
           !isBusy && !isRecording && (
             <p className="text-sm text-center py-4" style={{ color: "var(--muted)" }}>
-              Press Start Recording and speak in Japanese
+              「録音開始」を押して日本語で話してください
             </p>
           )
         )}
@@ -200,10 +200,10 @@ export default function RecorderClient() {
         <div className="card p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-base" style={{ color: "var(--text)" }}>
-              Extracted Words
+              抽出された単語
             </h2>
             <span className="text-xs" style={{ color: "var(--muted)" }}>
-              {words.length} word{words.length !== 1 ? "s" : ""}
+              {words.length}単語
             </span>
           </div>
           <div className="flex flex-wrap gap-2">

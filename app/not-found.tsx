@@ -8,12 +8,12 @@ export default function NotFound() {
         <Text size="4rem" className="jp-text" style={{ color: "#1D9E75" }}>
           見つからない
         </Text>
-        <Text fw={600} size="xl">Page not found</Text>
+        <Text fw={600} size="xl">ページが見つかりません</Text>
         <Text c="dimmed" ta="center">
-          That word or page doesn't exist. Head back and try a new search.
+          そのページまたは単語は見つかりません。検索し直してみてください。
         </Text>
         <Button component={Link} href="/" color="green" radius="xl">
-          Back to Home
+          ホームへ戻る
         </Button>
       </Stack>
     </main>

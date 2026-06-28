@@ -43,10 +43,10 @@ export default function HomePage() {
             ファヤの辞書
           </p>
           <h1 className="text-3xl font-bold leading-tight" style={{ color: "var(--text)" }}>
-            English–Japanese<br />Dictionary
+            英和辞書
           </h1>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            My personal Japanese dictionary — look up, practice, and take notes.
+            調べる・練習する・メモを取る
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export default function HomePage() {
 
         {/* Suggestions */}
         <div className="flex items-center gap-2 flex-wrap justify-center">
-          <span className="text-xs" style={{ color: "var(--muted)" }}>Try:</span>
+          <span className="text-xs" style={{ color: "var(--muted)" }}>例えば：</span>
           {SUGGESTIONS.map((t) => (
             <Link
               key={t}
@@ -83,7 +83,7 @@ export default function HomePage() {
             <div className="card w-full rounded-2xl p-5 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-                  Word of the refresh
+                  今日の単語
                 </span>
                 <div className="flex items-center gap-2">
                   {word.jlpt && (

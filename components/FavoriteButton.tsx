@@ -49,7 +49,7 @@ export default function FavoriteButton({ item, size = "md" }: FavoriteButtonProp
   }
 
   return (
-    <Tooltip label={favorited ? "Remove from favorites" : "Add to favorites"} withArrow>
+    <Tooltip label={favorited ? "お気に入りから削除" : "お気に入りに追加"} withArrow>
       <ActionIcon
         variant={favorited ? "filled" : "subtle"}
         color={favorited ? "yellow" : "gray"}
@@ -57,7 +57,7 @@ export default function FavoriteButton({ item, size = "md" }: FavoriteButtonProp
         radius="xl"
         style={{ minWidth: 44, minHeight: 44 }}
         onClick={handleClick}
-        aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+        aria-label={favorited ? "お気に入りから削除" : "お気に入りに追加"}
       >
         <svg
           width="16"

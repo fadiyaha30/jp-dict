@@ -28,10 +28,10 @@ export default async function GrammarPage({ searchParams }: PageProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>
-          Grammar Points
+          文法ポイント
         </h1>
         <p className="text-sm" style={{ color: "var(--muted)" }}>
-          JLPT N5–N1 grammar patterns with structure, examples, and notes.
+          JLPT N5〜N1の文法パターン
         </p>
       </div>
 
@@ -50,7 +50,7 @@ export default async function GrammarPage({ searchParams }: PageProps) {
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search by pattern, meaning, or example…"
+            placeholder="パターン・意味・例文で検索…"
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
             style={{
               background: "var(--surface)",
@@ -79,7 +79,7 @@ export default async function GrammarPage({ searchParams }: PageProps) {
                 color: active ? color : "var(--muted)",
               }}
             >
-              {lvl === "all" ? "All" : lvl}
+              {lvl === "all" ? "すべて" : lvl}
               <span
                 className="ml-1.5 text-[10px]"
                 style={{ opacity: 0.7 }}
@@ -95,7 +95,7 @@ export default async function GrammarPage({ searchParams }: PageProps) {
       {results.length === 0 ? (
         <div className="text-center py-16" style={{ color: "var(--muted)" }}>
           <p className="text-4xl mb-3 jp-text">文法</p>
-          <p className="text-sm">No grammar points found.</p>
+          <p className="text-sm">文法ポイントが見つかりません。</p>
         </div>
       ) : (
         <div className="grid gap-3">

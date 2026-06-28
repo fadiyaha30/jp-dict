@@ -13,7 +13,7 @@ export default function KanaPage() {
         仮名表
       </h1>
       <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
-        Hiragana &amp; Katakana reference
+        ひらがな・カタカナ一覧
       </p>
       <KanaClient />
     </main>

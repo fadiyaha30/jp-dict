@@ -278,7 +278,7 @@ function StrokeModal({ entry, onClose }: { entry: KanaEntry; onClose: () => void
           </div>
         ) : svgs.length === 0 ? (
           <p className="text-sm py-3 text-center" style={{ color: "var(--muted)" }}>
-            No stroke data available.
+            筆順データがありません。
           </p>
         ) : (
           <div className="flex gap-3 flex-wrap justify-center">
@@ -298,7 +298,7 @@ function StrokeModal({ entry, onClose }: { entry: KanaEntry; onClose: () => void
         )}
 
         <p className="text-[10px] text-center" style={{ color: "var(--muted)" }}>
-          ← → ↑ ↓ to navigate · Esc to close
+          ← → ↑ ↓ で移動 · Esc で閉じる
         </p>
       </div>
     </div>
@@ -401,7 +401,7 @@ export default function KanaClient() {
                 border: `1px solid ${tab === t ? "var(--accent)" : "var(--border)"}`,
               }}
             >
-              {t === "hiragana" ? "Hiragana ひ" : "Katakana カ"}
+              {t === "hiragana" ? "ひらがな" : "カタカナ"}
             </button>
           ))}
         </div>
@@ -420,13 +420,13 @@ export default function KanaClient() {
             className="inline-block w-3 h-3 rounded-full transition-colors"
             style={{ background: showRomaji ? "var(--accent)" : "var(--border)" }}
           />
-          Romaji
+          ローマ字
         </button>
       </div>
 
       {/* Hint */}
       <p className="text-xs text-center mb-1" style={{ color: "var(--muted)" }}>
-        Tap any character to see stroke order
+        文字をタップして筆順を表示
       </p>
 
       {/* Card */}
@@ -434,13 +434,13 @@ export default function KanaClient() {
         className="rounded-2xl p-5"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
-        <SectionHeading title="Basic — Gojūon 五十音" />
+        <SectionHeading title="基本 — 五十音" />
         <MainTable rows={main} showRomaji={showRomaji} onSelect={handleSelect} />
 
-        <SectionHeading title="Voiced — Dakuten 濁点" />
+        <SectionHeading title="濁音 — 濁点" />
         <MainTable rows={daku} showRomaji={showRomaji} onSelect={handleSelect} />
 
-        <SectionHeading title="Combinations — Yōon 拗音" />
+        <SectionHeading title="拗音" />
         <ComboTable rows={combo} showRomaji={showRomaji} onSelect={handleSelect} />
       </div>
     </div>

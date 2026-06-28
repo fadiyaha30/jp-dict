@@ -51,10 +51,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className="flex flex-col items-center gap-3 py-16">
             <p className="text-2xl">🔍</p>
             <p className="font-semibold" style={{ color: "var(--text)" }}>
-              No results for &ldquo;{query}&rdquo;
+              「{query}」の検索結果はありません
             </p>
             <p className="text-sm text-center" style={{ color: "var(--muted)" }}>
-              Try a different word, or switch between EN→JP and JP→EN modes.
+              別の単語を試すか、英→日・日→英モードを切り替えてください。
             </p>
           </div>
         ) : query ? (
@@ -64,13 +64,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 className="rounded-xl px-4 py-3 text-sm flex items-center gap-2"
                 style={{ background: "var(--accent-pale)", border: "1px solid #c7d2fe", color: "var(--accent)" }}
               >
-                <span>Showing results for</span>
+                <span>検索結果：</span>
                 <span className="font-semibold jp-text">{deinflectedTo}</span>
-                <span style={{ color: "var(--muted)" }}>(deinflected from &ldquo;{query}&rdquo;)</span>
+                <span style={{ color: "var(--muted)" }}>（「{query}」の活用形）</span>
               </div>
             )}
             <p className="text-sm" style={{ color: "var(--muted)" }}>
-              {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{deinflectedTo ?? query}&rdquo;
+              「{deinflectedTo ?? query}」の検索結果 {results.length}件
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {results.map((result) => (

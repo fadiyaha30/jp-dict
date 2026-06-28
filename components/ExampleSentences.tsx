@@ -14,7 +14,7 @@ export default function ExampleSentences({
   if (examples.length === 0) {
     return (
       <p className="text-sm text-center py-10" style={{ color: "var(--muted)" }}>
-        No example sentences found for this word.
+        この単語の例文が見つかりません。
       </p>
     );
   }
@@ -41,7 +41,7 @@ export default function ExampleSentences({
       ))}
 
       <p className="text-xs text-right mt-1" style={{ color: "#c0b8ae" }}>
-        via{" "}
+        出典：{" "}
         <a
           href={`https://tatoeba.org/en/sentences/search?from=jpn&to=eng&query=${encodeURIComponent(word)}`}
           target="_blank"

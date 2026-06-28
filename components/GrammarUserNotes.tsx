@@ -113,9 +113,9 @@ export default function GrammarUserNotes({
     return (
       <p className="text-sm text-center py-10" style={{ color: "var(--muted)" }}>
         <Link href="/login" style={{ color: "var(--accent)" }} className="hover:underline">
-          Sign in
+          ログイン
         </Link>{" "}
-        to add personal notes.
+        してメモを追加できます。
       </p>
     );
   }
@@ -124,7 +124,7 @@ export default function GrammarUserNotes({
     <div className="flex flex-col gap-5">
       {notes.length === 0 && !showAdd && (
         <p className="text-sm py-4" style={{ color: "var(--muted)" }}>
-          No notes for this grammar point yet.
+          まだメモがありません。
         </p>
       )}
 
@@ -136,11 +136,11 @@ export default function GrammarUserNotes({
             className="rounded-2xl p-5 flex flex-col gap-4"
             style={{ background: "var(--surface)", border: "1px solid #c7d2fe" }}
           >
-            <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>Edit Note</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>メモを編集</p>
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-                  Phrase / Sentence <span style={{ color: "#ef4444" }}>*</span>
+                  フレーズ・文 <span style={{ color: "#ef4444" }}>*</span>
                 </label>
                 <textarea
                   rows={2}
@@ -153,7 +153,7 @@ export default function GrammarUserNotes({
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>Meaning / Translation</label>
+                <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>意味・訳</label>
                 <input type="text" value={editForm.meaning}
                   onChange={(e) => setEditForm({ ...editForm, meaning: e.target.value })}
                   style={inputStyle}
@@ -163,7 +163,7 @@ export default function GrammarUserNotes({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-                  Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+                  状況 <span style={{ color: "var(--muted)", fontWeight: 400 }}>（任意）</span>
                 </label>
                 <input type="text" value={editForm.context}
                   onChange={(e) => setEditForm({ ...editForm, context: e.target.value })}
@@ -174,13 +174,13 @@ export default function GrammarUserNotes({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-                  Additional Notes <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+                  追記 <span style={{ color: "var(--muted)", fontWeight: 400 }}>（任意）</span>
                 </label>
                 <textarea
                   rows={2}
                   value={editForm.additional_notes}
                   onChange={(e) => setEditForm({ ...editForm, additional_notes: e.target.value })}
-                  placeholder="Extra notes, mnemonics, usage tips…"
+                  placeholder="補足・覚え方・使い方…"
                   className="resize-none"
                   style={inputStyle}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
@@ -191,11 +191,11 @@ export default function GrammarUserNotes({
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => setEditId(null)}
                 className="px-4 py-2 rounded-xl text-sm"
-                style={{ background: "var(--subtle)", color: "var(--muted)" }}>Cancel</button>
+                style={{ background: "var(--subtle)", color: "var(--muted)" }}>キャンセル</button>
               <button type="submit" disabled={saving || !editForm.phrase.trim()}
                 className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
                 style={{ background: "var(--accent)", color: "white" }}>
-                {saving ? "Saving…" : "Save"}
+                {saving ? "保存中…" : "保存"}
               </button>
             </div>
           </form>
@@ -214,21 +214,21 @@ export default function GrammarUserNotes({
               <button
                 onClick={() => { setEditId(note.id); setEditForm({ phrase: note.phrase, meaning: note.meaning, context: note.context, additional_notes: note.additional_notes }); setShowAdd(false); }}
                 className="text-xs px-2.5 py-1 rounded-lg transition-colors"
-                style={{ background: "var(--subtle)", color: "var(--muted)" }}>Edit</button>
+                style={{ background: "var(--subtle)", color: "var(--muted)" }}>編集</button>
               {confirmDeleteId === note.id ? (
                 <>
-                  <span className="text-xs self-center" style={{ color: "var(--muted)" }}>Delete?</span>
+                  <span className="text-xs self-center" style={{ color: "var(--muted)" }}>削除しますか？</span>
                   <button onClick={() => handleDelete(note.id)}
                     className="text-xs px-2.5 py-1 rounded-lg font-medium"
-                    style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>Yes</button>
+                    style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>はい</button>
                   <button onClick={() => setConfirmDeleteId(null)}
                     className="text-xs px-2.5 py-1 rounded-lg"
-                    style={{ background: "var(--subtle)", color: "var(--muted)" }}>No</button>
+                    style={{ background: "var(--subtle)", color: "var(--muted)" }}>いいえ</button>
                 </>
               ) : (
                 <button onClick={() => setConfirmDeleteId(note.id)}
                   className="text-xs px-2.5 py-1 rounded-lg transition-colors"
-                  style={{ background: "var(--subtle)", color: "var(--muted)" }}>Delete</button>
+                  style={{ background: "var(--subtle)", color: "var(--muted)" }}>削除</button>
               )}
             </div>
           </div>
@@ -238,25 +238,25 @@ export default function GrammarUserNotes({
       {showAdd && (
         <form onSubmit={handleAdd} className="rounded-2xl p-5 flex flex-col gap-4"
           style={{ background: "var(--surface)", border: "1px solid #c7d2fe" }}>
-          <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>New Note</p>
+          <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>新しいメモ</p>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-                Phrase / Sentence <span style={{ color: "#ef4444" }}>*</span>
+                フレーズ・文 <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <textarea rows={2} value={form.phrase}
                 onChange={(e) => setForm({ ...form, phrase: e.target.value })}
-                placeholder={`Your sentence using ${grammarPattern}…`}
+                placeholder={`${grammarPattern}を使った文…`}
                 className="jp-text resize-none" style={inputStyle}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
                 onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>Meaning / Translation</label>
+              <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>意味・訳</label>
               <input type="text" value={form.meaning}
                 onChange={(e) => setForm({ ...form, meaning: e.target.value })}
-                placeholder="Translation or memory tip"
+                placeholder="訳または覚え方"
                 style={inputStyle}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
                 onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
@@ -264,11 +264,11 @@ export default function GrammarUserNotes({
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-                Context <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+                状況 <span style={{ color: "var(--muted)", fontWeight: 400 }}>（任意）</span>
               </label>
               <input type="text" value={form.context}
                 onChange={(e) => setForm({ ...form, context: e.target.value })}
-                placeholder="Where did you encounter it?"
+                placeholder="どこで出会いましたか？"
                 style={inputStyle}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
                 onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
@@ -276,13 +276,13 @@ export default function GrammarUserNotes({
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-                Additional Notes <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span>
+                追記 <span style={{ color: "var(--muted)", fontWeight: 400 }}>（任意）</span>
               </label>
               <textarea
                 rows={2}
                 value={form.additional_notes}
                 onChange={(e) => setForm({ ...form, additional_notes: e.target.value })}
-                placeholder="Extra notes, mnemonics, usage tips…"
+                placeholder="補足・覚え方・使い方…"
                 className="resize-none"
                 style={inputStyle}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent-mid)")}
@@ -293,11 +293,11 @@ export default function GrammarUserNotes({
           <div className="flex gap-2 justify-end">
             <button type="button" onClick={() => { setShowAdd(false); setForm({ phrase: "", meaning: "", context: "", additional_notes: "" }); }}
               className="px-4 py-2 rounded-xl text-sm"
-              style={{ background: "var(--subtle)", color: "var(--muted)" }}>Cancel</button>
+              style={{ background: "var(--subtle)", color: "var(--muted)" }}>キャンセル</button>
             <button type="submit" disabled={saving || !form.phrase.trim()}
               className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
               style={{ background: "var(--accent)", color: "white" }}>
-              {saving ? "Saving…" : "Save"}
+              {saving ? "保存中…" : "保存"}
             </button>
           </div>
         </form>
@@ -308,12 +308,12 @@ export default function GrammarUserNotes({
           <button onClick={() => setShowAdd(true)}
             className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
             style={{ background: "var(--accent)", color: "white" }}>
-            + Add note
+            ＋ メモを追加
           </button>
         )}
         <Link href="/notes" className="text-xs ml-auto transition-colors hover:underline"
           style={{ color: "var(--muted)" }}>
-          View all personal notes →
+          すべてのメモを見る →
         </Link>
       </div>
     </div>

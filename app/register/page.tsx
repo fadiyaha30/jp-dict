@@ -16,7 +16,7 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (password !== confirm) { setError("Passwords do not match."); return; }
+    if (password !== confirm) { setError("パスワードが一致しません。"); return; }
 
     startTransition(async () => {
       const res = await fetch("/api/register", {
@@ -25,9 +25,9 @@ export default function RegisterPage() {
         body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Registration failed."); return; }
+      if (!res.ok) { setError(data.error ?? "登録に失敗しました。"); return; }
       const result = await signIn("credentials", { username, password, redirect: false });
-      if (result?.error) { setError("Account created but sign-in failed. Please sign in manually."); return; }
+      if (result?.error) { setError("アカウントを作成しましたが、ログインに失敗しました。手動でログインしてください。"); return; }
       router.push("/");
       router.refresh();
     });
@@ -45,8 +45,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-1 mb-8 text-center">
           <span className="jp-text text-3xl font-black" style={{ color: "var(--accent)" }}>辞</span>
-          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>Create an account</h1>
-          <p className="text-sm" style={{ color: "var(--muted)" }}>Join ファヤの辞書 to sync your progress</p>
+          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>アカウント作成</h1>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>ファヤの辞書に登録して学習記録を同期</p>
         </div>
 
         <div
@@ -61,26 +61,26 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-widest mb-1.5 block" style={{ color: "var(--muted)" }}>Username</label>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="your_username" required autoFocus autoComplete="username" {...inputProps()} />
-              <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>3–20 characters, letters/numbers/underscores</p>
+              <label className="text-xs font-semibold uppercase tracking-widest mb-1.5 block" style={{ color: "var(--muted)" }}>ユーザー名</label>
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ユーザー名を入力" required autoFocus autoComplete="username" {...inputProps()} />
+              <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>3〜20文字（英字・数字・アンダースコア）</p>
             </div>
 
             <div>
-              <label className="text-xs font-semibold uppercase tracking-widest mb-1.5 block" style={{ color: "var(--muted)" }}>Password</label>
+              <label className="text-xs font-semibold uppercase tracking-widest mb-1.5 block" style={{ color: "var(--muted)" }}>パスワード</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required autoComplete="new-password" {...inputProps()} />
-              <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>At least 8 characters</p>
+              <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>8文字以上</p>
             </div>
 
             <div>
-              <label className="text-xs font-semibold uppercase tracking-widest mb-1.5 block" style={{ color: "var(--muted)" }}>Confirm password</label>
+              <label className="text-xs font-semibold uppercase tracking-widest mb-1.5 block" style={{ color: "var(--muted)" }}>パスワード（確認）</label>
               <input
                 type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
                 placeholder="••••••••" required autoComplete="new-password"
                 {...inputProps(confirm && password !== confirm ? { borderColor: "#fca5a5" } : {})}
               />
               {confirm && password !== confirm && (
-                <p className="text-xs mt-1.5" style={{ color: "#dc2626" }}>Passwords do not match</p>
+                <p className="text-xs mt-1.5" style={{ color: "#dc2626" }}>パスワードが一致しません</p>
               )}
             </div>
 
@@ -89,14 +89,14 @@ export default function RegisterPage() {
               className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 mt-1"
               style={{ background: "var(--accent)", color: "white" }}
             >
-              {isPending ? "Creating account…" : "Create account"}
+              {isPending ? "作成中…" : "アカウントを作成"}
             </button>
           </form>
         </div>
 
         <p className="text-sm text-center mt-5" style={{ color: "var(--muted)" }}>
-          Already have an account?{" "}
-          <Link href="/login" style={{ color: "var(--accent)" }} className="font-medium hover:underline">Sign in</Link>
+          すでにアカウントをお持ちですか？{" "}
+          <Link href="/login" style={{ color: "var(--accent)" }} className="font-medium hover:underline">ログイン</Link>
         </p>
       </div>
     </main>

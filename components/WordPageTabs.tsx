@@ -21,11 +21,11 @@ export default function WordPageTabs({ word, examples, searchWord, result, conju
   const [activeTab, setActiveTab] = useState("definitions");
 
   const tabs = [
-    { key: "definitions", label: "Definitions" },
-    ...(conjugation ? [{ key: "conjugation", label: "Conjugation" }] : []),
-    ...(kanjiSvgs.length > 0 ? [{ key: "strokes", label: "Stroke Order" }] : []),
-    { key: "examples", label: `Examples${examples.length > 0 ? ` (${examples.length})` : ""}` },
-    { key: "notes", label: "My Notes" },
+    { key: "definitions", label: "意味" },
+    ...(conjugation ? [{ key: "conjugation", label: "活用" }] : []),
+    ...(kanjiSvgs.length > 0 ? [{ key: "strokes", label: "筆順" }] : []),
+    { key: "examples", label: `例文${examples.length > 0 ? `（${examples.length}）` : ""}` },
+    { key: "notes", label: "メモ" },
   ];
 
   return (

@@ -12,7 +12,7 @@ export default function KanjiStrokes({ chars }: KanjiStrokesProps) {
     return (
       <div className="flex flex-col items-center gap-3 py-12">
         <p className="text-sm" style={{ color: "var(--muted)" }}>
-          No kanji characters found in this entry.
+          この項目に漢字がありません。
         </p>
       </div>
     );
@@ -21,7 +21,7 @@ export default function KanjiStrokes({ chars }: KanjiStrokesProps) {
   return (
     <div className="flex flex-col gap-8">
       <p className="text-sm" style={{ color: "var(--muted)" }}>
-        Numbers indicate stroke order. Write each stroke in the numbered sequence.
+        数字は筆順を示します。番号順に書いてください。
       </p>
       <div className="flex flex-wrap gap-6">
         {chars.map(({ char, svg }) => (
