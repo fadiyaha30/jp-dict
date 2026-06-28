@@ -26,7 +26,8 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Registration failed."); return; }
-      await signIn("credentials", { username, password, redirect: false });
+      const result = await signIn("credentials", { username, password, redirect: false });
+      if (result?.error) { setError("Account created but sign-in failed. Please sign in manually."); return; }
       router.push("/");
       router.refresh();
     });
