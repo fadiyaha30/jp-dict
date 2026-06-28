@@ -28,6 +28,10 @@ function getKuroshiro() {
  * Example output:
  *   <ruby>靴<rt>くつ</rt></ruby>を<ruby>履<rt>は</rt></ruby>いてください。
  */
+export function warmFurigana(): void {
+  getKuroshiro();
+}
+
 export async function toFurigana(text: string): Promise<string> {
   try {
     const k = await getKuroshiro();

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import WordHistoryTracker from "@/components/WordHistoryTracker";
@@ -5,7 +6,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import WordPageTabs from "@/components/WordPageTabs";
 import { getWordDetail } from "@/lib/dictionary";
 import { fetchExamples } from "@/lib/tatoeba";
-import { toFurigana } from "@/lib/furigana";
+import { toFurigana, warmFurigana } from "@/lib/furigana";
 import { conjugate } from "@/lib/conjugation";
 import { extractKanji, fetchKanjiSvg } from "@/lib/kanjivg";
 
@@ -27,15 +28,24 @@ const JLPT_COLORS: Record<string, string> = {
   N1: "#ef4444", N2: "#f97316", N3: "#d97706", N4: "#0d9488", N5: "#4f46e5",
 };
 
-export default async function WordPage({ params }: WordPageProps) {
-  const { id } = await params;
-  const detail = getWordDetail(id);
-  if (!detail) notFound();
+async function AsyncWordPageTabs({
+  word,
+  searchWord,
+  result,
+  conjugation,
+  kanjiChars,
+}: {
+  word: any;
+  searchWord: string;
+  result: any;
+  conjugation: any;
+  kanjiChars: string[];
+}) {
+  const [rawExamples, kanjiSvgEntries] = await Promise.all([
+    fetchExamples(searchWord, 5),
+    Promise.all(kanjiChars.map(async (char) => ({ char, svg: await fetchKanjiSvg(char) }))),
+  ]);
 
-  const { word, result } = detail;
-
-  const searchWord = result.kanji !== result.reading ? result.kanji : result.reading;
-  const rawExamples = await fetchExamples(searchWord, 5);
   const examples = await Promise.all(
     rawExamples.map(async (ex) => ({
       ...ex,
@@ -43,19 +53,72 @@ export default async function WordPage({ params }: WordPageProps) {
     }))
   );
 
-  const altKanji = word.kanji.slice(1).map((k) => k.text);
-  const altKana = word.kana.slice(1).map((k) => k.text);
-
-  const rawPos = [...new Set(word.sense.flatMap((s) => s.partOfSpeech))];
-  const conjugation = conjugate(result.reading, rawPos);
-
-  const kanjiChars = extractKanji(result.kanji);
-  const kanjiSvgEntries = await Promise.all(
-    kanjiChars.map(async (char) => ({ char, svg: await fetchKanjiSvg(char) }))
-  );
   const kanjiSvgs = kanjiSvgEntries.filter(
     (e): e is { char: string; svg: string } => e.svg !== null
   );
+
+  return (
+    <WordPageTabs
+      word={word}
+      examples={examples}
+      searchWord={searchWord}
+      result={result}
+      conjugation={conjugation}
+      kanjiSvgs={kanjiSvgs}
+    />
+  );
+}
+
+function TabsSkeleton() {
+  return (
+    <div>
+      <div
+        className="flex border-b mb-6 gap-1"
+        style={{ borderColor: "var(--border)" }}
+      >
+        {["Definitions", "Examples", "My Notes"].map((label) => (
+          <div
+            key={label}
+            className="px-4 py-2.5 text-sm rounded-t"
+            style={{ color: "var(--muted)", opacity: 0.4 }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-3 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={i}
+            className="rounded-xl p-4"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          >
+            <div className="h-4 rounded w-1/4 mb-2" style={{ background: "var(--subtle)" }} />
+            <div className="h-3 rounded w-3/4" style={{ background: "var(--subtle)" }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default async function WordPage({ params }: WordPageProps) {
+  const { id } = await params;
+  const detail = getWordDetail(id);
+  if (!detail) notFound();
+
+  const { word, result } = detail;
+
+  warmFurigana();
+
+  const altKanji = word.kanji.slice(1).map((k: any) => k.text);
+  const altKana = word.kana.slice(1).map((k: any) => k.text);
+
+  const rawPos = [...new Set(word.sense.flatMap((s: any) => s.partOfSpeech))] as string[];
+  const conjugation = conjugate(result.reading, rawPos);
+
+  const kanjiChars = extractKanji(result.kanji);
+  const searchWord = result.kanji !== result.reading ? result.kanji : result.reading;
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-6 w-full">
@@ -137,7 +200,7 @@ export default async function WordPage({ params }: WordPageProps) {
                   JLPT {result.jlpt}
                 </span>
               )}
-              {result.partOfSpeech.slice(0, 3).map((pos) => (
+              {result.partOfSpeech.slice(0, 3).map((pos: string) => (
                 <span
                   key={pos}
                   className="text-xs px-2.5 py-1 rounded-lg"
@@ -151,7 +214,7 @@ export default async function WordPage({ params }: WordPageProps) {
             {/* Alt forms */}
             {(altKanji.length > 0 || altKana.length > 0) && (
               <div className="flex gap-1.5 flex-wrap">
-                {[...altKanji, ...altKana].map((k) => (
+                {[...altKanji, ...altKana].map((k: string) => (
                   <span
                     key={k}
                     className="jp-text text-xs px-2 py-0.5 rounded"
@@ -179,15 +242,16 @@ export default async function WordPage({ params }: WordPageProps) {
         </div>
       </div>
 
-      {/* ── Tabs + content ───────────────────────────────── */}
-      <WordPageTabs
-        word={word}
-        examples={examples}
-        searchWord={searchWord}
-        result={result}
-        conjugation={conjugation}
-        kanjiSvgs={kanjiSvgs}
-      />
+      {/* ── Tabs + content (streamed) ────────────────────── */}
+      <Suspense fallback={<TabsSkeleton />}>
+        <AsyncWordPageTabs
+          word={word}
+          searchWord={searchWord}
+          result={result}
+          conjugation={conjugation}
+          kanjiChars={kanjiChars}
+        />
+      </Suspense>
     </main>
   );
 }
