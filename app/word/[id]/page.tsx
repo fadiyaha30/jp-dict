@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import WordHistoryTracker from "@/components/WordHistoryTracker";
 import FavoriteButton from "@/components/FavoriteButton";
-import VoiceButton from "@/components/VoiceButton";
 import WordPageTabs from "@/components/WordPageTabs";
 import { getWordDetail } from "@/lib/dictionary";
 import { fetchExamples } from "@/lib/tatoeba";
@@ -12,7 +11,6 @@ import { extractKanji, fetchKanjiSvg } from "@/lib/kanjivg";
 
 interface WordPageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
 }
 
 export async function generateMetadata({ params }: WordPageProps) {
@@ -29,10 +27,8 @@ const JLPT_COLORS: Record<string, string> = {
   N1: "#ef4444", N2: "#f97316", N3: "#d97706", N4: "#0d9488", N5: "#4f46e5",
 };
 
-export default async function WordPage({ params, searchParams }: WordPageProps) {
+export default async function WordPage({ params }: WordPageProps) {
   const { id } = await params;
-  const { from } = await searchParams;
-  const backHref = from ?? "/search";
   const detail = getWordDetail(id);
   if (!detail) notFound();
 
@@ -72,8 +68,8 @@ export default async function WordPage({ params, searchParams }: WordPageProps) 
 
       {/* ── Back link ───────────────────────────────────── */}
       <Link
-        href={backHref}
-        className="inline-flex items-center gap-1.5 text-sm mb-6 transition-colors"
+        href="/search"
+        className="inline-flex items-center gap-1.5 text-sm mb-6 transition-colors min-h-[44px]"
         style={{ color: "var(--muted)" }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -168,21 +164,18 @@ export default async function WordPage({ params, searchParams }: WordPageProps) 
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <VoiceButton text={result.kanji} reading={result.reading} />
-            <FavoriteButton
-              size="md"
-              item={{
-                id: result.id,
-                kanji: result.kanji,
-                reading: result.reading,
-                romaji: result.romaji,
-                meaning: result.meanings[0] ?? "",
-                partOfSpeech: result.partOfSpeech,
-                jlpt: result.jlpt,
-              }}
-            />
-          </div>
+          <FavoriteButton
+            size="md"
+            item={{
+              id: result.id,
+              kanji: result.kanji,
+              reading: result.reading,
+              romaji: result.romaji,
+              meaning: result.meanings[0] ?? "",
+              partOfSpeech: result.partOfSpeech,
+              jlpt: result.jlpt,
+            }}
+          />
         </div>
       </div>
 

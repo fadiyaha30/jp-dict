@@ -37,7 +37,7 @@ export default function KanjiStrokes({ chars }: KanjiStrokesProps) {
               {char}
             </span>
             <div
-              style={{ width: 160, height: 160 }}
+              style={{ width: "min(160px, calc(100vw - 7rem))", height: "min(160px, calc(100vw - 7rem))" }}
               dangerouslySetInnerHTML={{ __html: svg }}
             />
           </div>

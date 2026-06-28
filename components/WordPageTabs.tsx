@@ -32,14 +32,14 @@ export default function WordPageTabs({ word, examples, searchWord, result, conju
     <div>
       {/* Tab bar */}
       <div
-        className="flex border-b mb-6"
-        style={{ borderColor: "var(--border)" }}
+        className="flex border-b mb-6 overflow-x-auto"
+        style={{ borderColor: "var(--border)", scrollbarWidth: "none" }}
       >
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="px-4 py-2.5 text-sm font-medium transition-colors relative"
+            className="px-4 py-2.5 text-sm font-medium transition-colors relative shrink-0"
             style={{
               color: activeTab === tab.key ? "var(--accent)" : "var(--muted)",
               background: "none",

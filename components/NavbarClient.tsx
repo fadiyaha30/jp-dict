@@ -17,18 +17,25 @@ const NAV_LINKS = [
 
 export default function NavbarClient({ username }: { username: string | null }) {
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
+        setDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) => pathname === href;
 
   return (
     <header
@@ -46,9 +53,10 @@ export default function NavbarClient({ username }: { username: string | null }) 
           <span className="font-bold text-base tracking-tight" style={{ color: "var(--text)" }}>ファヤの辞書</span>
         </Link>
 
-        <nav className="flex items-center gap-0.5 flex-1">
+        {/* Desktop nav */}
+        <nav className="hidden sm:flex items-center gap-0.5 flex-1">
           {NAV_LINKS.map(({ href, label }) => {
-            const active = pathname === href;
+            const active = isActive(href);
             return (
               <Link
                 key={href}
@@ -66,15 +74,16 @@ export default function NavbarClient({ username }: { username: string | null }) 
           })}
         </nav>
 
-        <div className="shrink-0">
+        {/* Desktop user section */}
+        <div className="hidden sm:block shrink-0">
           {username ? (
             <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setMenuOpen((v) => !v)}
+                onClick={() => setDropdownOpen((v) => !v)}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded-full transition-all"
                 style={{
                   border: "1px solid var(--border)",
-                  background: menuOpen ? "var(--accent-pale)" : "transparent",
+                  background: dropdownOpen ? "var(--accent-pale)" : "transparent",
                 }}
               >
                 <span
@@ -93,7 +102,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
                   fill="none"
                   style={{
                     color: "var(--muted)",
-                    transform: menuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
                     transition: "transform 0.15s ease",
                   }}
                 >
@@ -101,7 +110,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
                 </svg>
               </button>
 
-              {menuOpen && (
+              {dropdownOpen && (
                 <div
                   className="absolute right-0 mt-1.5 w-36 rounded-lg overflow-hidden shadow-md"
                   style={{ background: "var(--bg)", border: "1px solid var(--border)", top: "100%" }}
@@ -123,7 +132,7 @@ export default function NavbarClient({ username }: { username: string | null }) 
               <Link
                 href="/login"
                 className="text-sm transition-colors"
-                style={{ color: pathname === "/login" ? "var(--accent)" : "var(--muted)" }}
+                style={{ color: isActive("/login") ? "var(--accent)" : "var(--muted)" }}
               >
                 Sign in
               </Link>
@@ -137,7 +146,84 @@ export default function NavbarClient({ username }: { username: string | null }) 
             </div>
           )}
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="sm:hidden ml-auto flex flex-col justify-center items-center gap-1.5 w-10 h-10 rounded-lg"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label="Toggle menu"
+        >
+          <span
+            className="block w-5 h-0.5 transition-all origin-center"
+            style={{
+              background: "var(--text)",
+              transform: mobileOpen ? "translateY(8px) rotate(45deg)" : undefined,
+            }}
+          />
+          <span
+            className="block w-5 h-0.5 transition-all"
+            style={{
+              background: "var(--text)",
+              opacity: mobileOpen ? 0 : 1,
+            }}
+          />
+          <span
+            className="block w-5 h-0.5 transition-all origin-center"
+            style={{
+              background: "var(--text)",
+              transform: mobileOpen ? "translateY(-8px) rotate(-45deg)" : undefined,
+            }}
+          />
+        </button>
       </div>
+
+      {/* Mobile dropdown */}
+      {mobileOpen && (
+        <div
+          className="sm:hidden border-t px-4 py-4 flex flex-col gap-4"
+          style={{ background: "rgba(245,240,232,0.97)", borderColor: "var(--border)" }}
+        >
+          {NAV_LINKS.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="text-sm font-medium py-1 transition-colors"
+              style={{ color: isActive(href) ? "var(--accent)" : "var(--text)" }}
+            >
+              {label}
+            </Link>
+          ))}
+
+          <div className="border-t pt-4 flex flex-col gap-3" style={{ borderColor: "var(--border)" }}>
+            {username ? (
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="text-sm text-left transition-colors"
+                style={{ color: "var(--muted)", background: "none", border: "none", padding: 0 }}
+              >
+                Sign out
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: isActive("/login") ? "var(--accent)" : "var(--text)" }}
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="text-sm px-4 py-2 rounded-full font-medium text-center transition-all hover:opacity-90"
+                  style={{ background: "var(--accent)", color: "white" }}
+                >
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
