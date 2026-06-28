@@ -95,7 +95,7 @@ export default function FavoritesPage() {
                     )}
                     <button
                       onClick={() => handleRemove(item.id)}
-                      className="text-xs px-2 py-1 rounded-lg transition-all"
+                      className="w-11 h-11 flex items-center justify-center rounded-lg transition-all"
                       style={{ background: "#fef3c7", color: "#d97706", border: "none" }}
                       aria-label="Remove"
                     >

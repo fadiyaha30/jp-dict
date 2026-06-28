@@ -55,6 +55,7 @@ export default function FavoriteButton({ item, size = "md" }: FavoriteButtonProp
         color={favorited ? "yellow" : "gray"}
         size={size}
         radius="xl"
+        style={{ minWidth: 44, minHeight: 44 }}
         onClick={handleClick}
         aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
       >

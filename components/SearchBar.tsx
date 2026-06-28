@@ -84,7 +84,7 @@ export default function SearchBar({
           <button
             type="submit"
             disabled={isPending || !query.trim()}
-            className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
+            className="shrink-0 px-3 py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40 min-h-[44px]"
             style={{ background: "var(--accent)", color: "white" }}
           >
             {isPending ? "…" : "Search"}
@@ -102,7 +102,7 @@ export default function SearchBar({
             <button
               key={m}
               onClick={() => setMode(m)}
-              className="px-4 py-1.5 text-xs font-medium transition-all"
+              className="px-4 py-2.5 text-xs font-medium transition-all min-h-[44px]"
               style={
                 mode === m
                   ? { background: "var(--surface)", color: "var(--accent)", fontWeight: 600 }

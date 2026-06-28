@@ -77,7 +77,7 @@ export default function HistoryPage() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className="px-4 py-1.5 text-xs font-medium transition-all"
+                  className="px-4 py-2.5 text-xs font-medium transition-all min-h-[44px]"
                   style={
                     filter === f
                       ? { background: "var(--surface)", color: "var(--accent)", fontWeight: 600 }
@@ -145,7 +145,7 @@ export default function HistoryPage() {
                   <span className="text-xs" style={{ color: "#c0b8ae" }}>{timeAgo(item.timestamp)}</span>
                   <button
                     onClick={() => handleRemove(item.timestamp)}
-                    className="text-xs w-5 h-5 flex items-center justify-center rounded transition-colors"
+                    className="text-sm w-11 h-11 flex items-center justify-center rounded-lg transition-colors"
                     style={{ color: "var(--muted)", background: "none", border: "none" }}
                     aria-label="Remove"
                   >

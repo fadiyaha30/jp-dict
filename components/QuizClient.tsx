@@ -458,7 +458,7 @@ function FlipView({
           onClick={!flipped ? onFlip : undefined}
           style={{
             position: "relative",
-            height: "300px",
+            height: "clamp(220px, 38vh, 300px)",
             transformStyle: "preserve-3d",
             transition: "transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
